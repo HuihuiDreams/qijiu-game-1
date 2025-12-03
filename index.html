@@ -34,6 +34,20 @@
         .animate-fade-in {
             animation: fadeIn 0.8s ease-in-out;
         }
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #06b6d4; /* cyan-500 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* 扫描线效果增强 */
         .scanlines {
             background: linear-gradient(
@@ -136,6 +150,7 @@
 
         const { useState, useEffect, useRef } = React;
         
+        // --- 资源 URL 统一管理 ---
         const BG_QINGJING = 'https://raw.githubusercontent.com/HuihuiDreams/qijiu-game-1/main/bk.JPG';
         const SHEN_QINGQIU_PIC = 'https://raw.githubusercontent.com/HuihuiDreams/qijiu-game-1/main/shenqingqiu.png'; 
         const YUE_QINGYUAN_PIC = 'https://raw.githubusercontent.com/HuihuiDreams/qijiu-game-1/main/yueqingyuan.png'; 
@@ -153,13 +168,17 @@
             const [isPlaying, setIsPlaying] = useState(false);
             
             const play = () => {
+                // 确保在用户交互后才尝试播放，并处理Promise
                 const playPromise = audioRef.current.play();
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
                         setIsPlaying(true);
+                        console.log("Audio playback started successfully.");
                     }).catch(error => {
-                        console.log("Audio auto-play failed, waiting for user interaction.", error);
+                        // 播放失败，通常是移动端的自动播放限制
+                        console.log("Audio auto-play failed. User needs to interact again to enable.", error);
                         setIsPlaying(false);
+                        // 不阻塞 UI，仅仅记录失败
                     });
                 }
             };
@@ -181,6 +200,7 @@
                 const audio = audioRef.current;
                 return () => {
                     audio.pause();
+                    // 在组件卸载时清除资源
                     if (!url.startsWith('data:')) {
                         audio.removeAttribute('src');
                     }
@@ -192,11 +212,25 @@
 
 
         const Game = () => {
-        const [scene, setScene] = useState('start');
+        const [scene, setScene] = useState('loading'); // 初始状态改为 loading
         const [dialogueIndex, setDialogueIndex] = useState(0);
         const [typedText, setTypedText] = useState('');
         const [isTyping, setIsTyping] = useState(false);
+        const [isPreloaded, setIsPreloaded] = useState(false); // 新增预加载状态
         const { isPlaying, play, toggle } = useAudio(BGM_URL);
+
+        // --- 模拟预加载 / 初始化组件 ---
+        useEffect(() => {
+            // 模拟加载时间，让组件有时间渲染，避免移动端初始白屏卡顿
+            // 真实项目中这里应该放置图片和音频的fetch或Image().onload()逻辑
+            const timer = setTimeout(() => {
+                setIsPreloaded(true);
+                setScene('start');
+            }, 1000); // 至少等待1秒，确保初始渲染完成
+
+            return () => clearTimeout(timer);
+        }, []);
+
 
         // 剧本数据
         const scenes = {
@@ -252,13 +286,13 @@
 
         // 打字机效果
         useEffect(() => {
+            if (scene === 'start' || scene === 'loading' || scene === 'choice' || scene === 'endingA') return;
+
             let currentText = "";
             if (scene === 'dialogue') {
                 currentText = scenes.dialogue.lines[dialogueIndex].text;
             } else if (scene === 'endingB') {
                 currentText = scenes.endingB.lines[dialogueIndex].text;
-            } else {
-                return;
             }
 
             setTypedText('');
@@ -312,15 +346,16 @@
         };
 
         const startGame = () => {
+            // 在这里尝试播放音乐，利用用户点击操作来绕过移动端限制
+            play(); 
             setScene('dialogue');
-            play();
         }
 
         const resetGame = () => {
             setScene('start');
             setDialogueIndex(0);
             if (isPlaying) {
-                toggle(); 
+                toggle(); // 暂停音乐
             }
         };
 
@@ -362,20 +397,34 @@
                 <div className="absolute inset-0 scanlines opacity-20 pointer-events-none"></div>
             </div>
 
-            {/* 音乐控制按钮 */}
-            <button 
-                onClick={toggle}
-                className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 text-cyan-500 hover:bg-cyan-900/50 transition-all border border-cyan-800/50 backdrop-blur-sm"
-                title={isPlaying ? "暂停音乐" : "播放音乐"}
-            >
-                {isPlaying ? <Volume2 size={20} /> : <VolumeX size={20} />}
-            </button>
+            {/* --- 0. 加载画面 (Loading Screen) --- */}
+            {!isPreloaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-950/95 z-50">
+                    <div className="text-center space-y-4">
+                        <div className="spinner mx-auto"></div>
+                        <p className="text-slate-400 font-mono text-sm">Initializing resources...</p>
+                        <p className="text-slate-600 text-xs">(移动端首次加载可能较慢)</p>
+                    </div>
+                </div>
+            )}
+
+
+            {/* 音乐控制按钮 - 只有在加载完成后才显示 */}
+            {scene !== 'loading' && (
+                <button 
+                    onClick={toggle}
+                    className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 text-cyan-500 hover:bg-cyan-900/50 transition-all border border-cyan-800/50 backdrop-blur-sm"
+                    title={isPlaying ? "暂停音乐" : "播放音乐"}
+                >
+                    {isPlaying ? <Volume2 size={20} /> : <VolumeX size={20} />}
+                </button>
+            )}
 
             {/* --- 2. 游戏内容层 --- */}
             <div className="absolute inset-0 z-10 flex flex-col justify-between">
                 
                 {/* === Start Screen === */}
-                {scene === 'start' && (
+                {scene === 'start' && isPreloaded && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fade-in">
                         <div className="text-center space-y-8">
                             <div className="w-24 h-24 bg-cyan-900/20 rounded-full border border-cyan-500/50 flex items-center justify-center mx-auto shadow-[0_0_50px_rgba(6,182,212,0.2)]">
@@ -393,6 +442,9 @@
                             >
                                 [ Initialize ]
                             </button>
+                            <p className="text-xs text-slate-500 max-w-xs mx-auto pt-4">
+                                * 移动设备需点击按钮后才能播放背景音乐。
+                            </p>
                         </div>
                     </div>
                 )}
