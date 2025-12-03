@@ -46,6 +46,14 @@
             background-size: 100% 4px;
             animation: scanlineMove 10s linear infinite; 
         }
+        /* 自定义滚动条隐藏 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -227,7 +235,7 @@
             },
             endingA: {
                 id: 'endingA',
-                text: "岳清源松开了沈清秋的手，在离开之前，将准备好的首席弟子礼——竹柏剑穗放在沈清秋的屋门口，离开了。沈清秋在人走远之后，才打开门，站了一夜。你获得了成就——一夜无眠。",
+                text: "岳清源松开了沈清秋的手，在离开之前，将准备好的首席弟子礼——竹柏剑穗放在沈清清秋的屋门口，离开了。沈清秋在人走远之后，才打开门，站了一夜。你获得了成就——一夜无眠。",
                 mood: 'bad'
             },
             endingB: {
@@ -332,6 +340,10 @@
         }
 
         const currentSpeaker = getCurrentSpeaker();
+        // 确定哪个角色在说话
+        const isShenSpeaking = currentSpeaker === '沈清秋';
+        const isYueSpeaking = currentSpeaker === '岳清源';
+
 
         return (
             <div className="w-full h-screen bg-black text-cyan-50 font-sans overflow-hidden relative select-none">
@@ -362,9 +374,6 @@
             {/* --- 2. 游戏内容层 --- */}
             <div className="absolute inset-0 z-10 flex flex-col justify-between">
                 
-                {/* 顶部留空 或 LOGO */}
-                <div className="h-16"></div>
-
                 {/* === Start Screen === */}
                 {scene === 'start' && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fade-in">
@@ -388,99 +397,89 @@
                     </div>
                 )}
 
-                {/* === Main Gameplay Area (立绘 + 对话框) === */}
+                {/* === Main Gameplay Area (左右布局) === */}
                 {(scene === 'dialogue' || scene === 'endingB') && (
-                    <div className="flex flex-col h-full justify-end animate-fade-in">
+                    <div className="w-full h-full flex flex-col md:flex-row items-end justify-between animate-fade-in relative">
                         
-                        {/* --- 立绘展示区 (Character Stage) --- */}
-                        {/* 位于对话框上方，使用 absolute bottom positioning or flex */}
-                        <div className="flex-1 flex items-end justify-center gap-4 md:gap-16 pb-0 pointer-events-none w-full max-w-6xl mx-auto px-4">
-                            
-                            {/* 岳清源 */}
-                            <div className={`transition-all duration-500 ease-out transform origin-bottom
-                                ${currentSpeaker === '岳清源' ? 'scale-110 brightness-110 z-10 translate-y-0' : 'scale-95 brightness-50 opacity-80 translate-y-4 z-0'}
-                            `}>
-                                {/* 这里我们去掉以前的边框，尝试模拟更自然的立绘效果，或者保持精致的卡片风格 */}
-                                <div className="relative group">
-                                    <div className={`w-32 h-64 md:w-64 md:h-[450px] overflow-hidden rounded-t-xl transition-all duration-500 
-                                        ${currentSpeaker === '岳清源' ? 'shadow-[0_0_30px_rgba(99,102,241,0.4)] border-t-2 border-indigo-500/50' : 'border-t-2 border-transparent'}
-                                    `}>
-                                        <img 
-                                            src={YUE_QINGYUAN_PIC} 
-                                            className="w-full h-full object-cover"
-                                            onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/300x500/292b6a/c7d2fe?text=Yue"; }}
-                                        />
-                                        {/* 暗部遮罩 (非说话时) */}
-                                        {currentSpeaker !== '岳清源' && <div className="absolute inset-0 bg-black/40"></div>}
+                        {/* --- 左侧：对话框区域 (Text Box) --- */}
+                        <div className="w-full md:w-[65%] lg:w-[70%] h-auto md:h-auto order-2 md:order-1 relative z-20 pb-0 md:pb-12 pl-0 md:pl-12 pr-0 md:pr-0">
+                            <div 
+                                onClick={handleNext}
+                                className="w-full bg-gradient-to-t from-slate-950 via-slate-900/95 to-slate-900/80 border-t md:border border-slate-700/50 backdrop-blur-md min-h-[30vh] md:min-h-[280px] p-6 md:p-10 relative cursor-pointer hover:bg-slate-900/90 transition-colors shadow-[0_-10px_50px_rgba(0,0,0,0.8)] md:rounded-tr-xl md:rounded-br-none"
+                            >
+                                {/* 名字栏 (Name Tag) */}
+                                {currentSpeaker && currentSpeaker !== '旁白' && currentSpeaker !== '背景' && (
+                                    <div className="absolute top-0 left-8 transform -translate-y-1/2 bg-slate-900 border border-slate-600 px-6 py-2 rounded shadow-lg flex items-center gap-2 z-30">
+                                        <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
+                                        <span className="font-bold text-lg tracking-wider text-slate-100 font-serif">
+                                            {renderSpeakerName(currentSpeaker)}
+                                        </span>
                                     </div>
-                                    {/* 名字标签 */}
-                                    <div className={`absolute bottom-2 left-0 right-0 text-center text-xs tracking-widest transition-opacity duration-300 ${currentSpeaker === '岳清源' ? 'opacity-100 text-indigo-300' : 'opacity-0'}`}>
-                                        YUE QINGYUAN
-                                    </div>
+                                )}
+
+                                {/* 文本内容 */}
+                                <div className="max-w-4xl h-full flex flex-col">
+                                    <p className={`text-lg md:text-2xl leading-relaxed text-slate-200 ${currentSpeaker === '旁白' || currentSpeaker === '背景' ? 'font-sans text-slate-400 italic' : 'font-serif'}`}>
+                                        {/* 渲染文本 */}
+                                        {scene === 'endingB' && dialogueIndex === scenes.endingB.lines.length - 1 
+                                            ? scenes.endingB.lines[dialogueIndex].text 
+                                            : typedText
+                                        }
+                                        
+                                        {/* 光标 */}
+                                        {!(scene === 'endingB' && dialogueIndex === scenes.endingB.lines.length - 1) && (
+                                            <span className="inline-block ml-1 w-2 h-6 bg-cyan-500 align-sub animate-pulse"></span>
+                                        )}
+                                    </p>
+                                </div>
+
+                                {/* 点击提示 */}
+                                <div className="absolute bottom-4 right-8 text-slate-500 text-xs font-mono animate-bounce flex items-center gap-1">
+                                    <span>NEXT</span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l12 8-12 8V4z"/></svg>
                                 </div>
                             </div>
-
-                            {/* 沈清秋 */}
-                            <div className={`transition-all duration-500 ease-out transform origin-bottom
-                                ${currentSpeaker === '沈清秋' ? 'scale-110 brightness-110 z-10 translate-y-0' : 'scale-95 brightness-50 opacity-80 translate-y-4 z-0'}
-                            `}>
-                                <div className="relative group">
-                                    <div className={`w-32 h-64 md:w-64 md:h-[450px] overflow-hidden rounded-t-xl transition-all duration-500 
-                                        ${currentSpeaker === '沈清秋' ? 'shadow-[0_0_30px_rgba(16,185,129,0.4)] border-t-2 border-emerald-500/50' : 'border-t-2 border-transparent'}
-                                    `}>
-                                        <img 
-                                            src={SHEN_QINGQIU_PIC} 
-                                            className="w-full h-full object-cover"
-                                            onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/300x500/065f46/d1fae5?text=Shen"; }}
-                                        />
-                                        {currentSpeaker !== '沈清秋' && <div className="absolute inset-0 bg-black/40"></div>}
-                                    </div>
-                                     {/* 名字标签 */}
-                                     <div className={`absolute bottom-2 left-0 right-0 text-center text-xs tracking-widest transition-opacity duration-300 ${currentSpeaker === '沈清秋' ? 'opacity-100 text-emerald-300' : 'opacity-0'}`}>
-                                        SHEN QINGQIU
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
 
-                        {/* --- 对话框区域 (Text Box) --- */}
-                        <div 
-                            onClick={handleNext}
-                            className="w-full bg-gradient-to-t from-slate-950 via-slate-900/95 to-slate-900/80 border-t border-slate-700/50 backdrop-blur-md min-h-[28vh] md:min-h-[220px] p-6 md:p-10 relative cursor-pointer hover:bg-slate-900/90 transition-colors shadow-[0_-10px_50px_rgba(0,0,0,0.8)] z-20"
-                        >
-                            {/* 名字栏 (Name Tag) */}
-                            {currentSpeaker && currentSpeaker !== '旁白' && currentSpeaker !== '背景' && (
-                                <div className="absolute top-0 left-8 md:left-20 transform -translate-y-1/2 bg-slate-900 border border-slate-600 px-6 py-2 rounded shadow-lg flex items-center gap-2 z-30">
-                                    <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
-                                    <span className="font-bold text-lg tracking-wider text-slate-100 font-serif">
-                                        {renderSpeakerName(currentSpeaker)}
-                                    </span>
-                                </div>
-                            )}
-
-                            {/* 文本内容 */}
-                            <div className="max-w-5xl mx-auto h-full flex flex-col">
-                                <p className={`text-lg md:text-2xl leading-relaxed text-slate-200 ${currentSpeaker === '旁白' || currentSpeaker === '背景' ? 'font-sans text-slate-400 italic' : 'font-serif'}`}>
-                                    {/* 渲染文本 */}
-                                    {scene === 'endingB' && dialogueIndex === scenes.endingB.lines.length - 1 
-                                        ? scenes.endingB.lines[dialogueIndex].text 
-                                        : typedText
-                                    }
+                        {/* --- 右侧：立绘展示区 (Character Stage) --- */}
+                        <div className="w-full md:w-[35%] lg:w-[30%] h-[50vh] md:h-full order-1 md:order-2 relative z-10 pointer-events-none">
+                            <div className="absolute bottom-0 right-0 w-full h-full flex items-end justify-center md:justify-end px-4 md:pr-12 pb-0 overflow-hidden">
+                                
+                                {/* 容器：用于并排或层叠放置立绘 */}
+                                <div className="relative w-full h-full max-w-[500px] md:max-w-none flex items-end justify-center md:justify-end">
                                     
-                                    {/* 光标 */}
-                                    {!(scene === 'endingB' && dialogueIndex === scenes.endingB.lines.length - 1) && (
-                                        <span className="inline-block ml-1 w-2 h-6 bg-cyan-500 align-sub animate-pulse"></span>
-                                    )}
-                                </p>
-                            </div>
+                                    {/* 立绘 1: 岳清源 */}
+                                    <div className={`absolute bottom-0 right-1/2 md:right-0 transform translate-x-1/2 md:translate-x-0 transition-all duration-500 ease-out origin-bottom
+                                        ${isYueSpeaking ? 'opacity-100 scale-105 z-20 drop-shadow-[0_0_20px_rgba(99,102,241,0.9)]' : 'opacity-0 scale-95 z-10'}
+                                    `}>
+                                        <div className={`w-[45vw] md:w-[320px] lg:w-[380px] max-h-[85vh]`}>
+                                            <img 
+                                                src={YUE_QINGYUAN_PIC} 
+                                                className="w-full h-auto object-contain"
+                                                style={{ maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)' }}
+                                                onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/300x600/292b6a/c7d2fe?text=Yue"; }}
+                                            />
+                                        </div>
+                                    </div>
 
-                            {/* 点击提示 */}
-                            <div className="absolute bottom-4 right-8 text-slate-500 text-xs font-mono animate-bounce flex items-center gap-1">
-                                <span>NEXT</span>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l12 8-12 8V4z"/></svg>
+                                    {/* 立绘 2: 沈清秋 */}
+                                    <div className={`absolute bottom-0 right-1/2 md:right-0 transform translate-x-1/2 md:translate-x-0 transition-all duration-500 ease-out origin-bottom
+                                        ${isShenSpeaking ? 'opacity-100 scale-105 z-20 drop-shadow-[0_0_20px_rgba(16,185,129,0.9)]' : 'opacity-0 scale-95 z-10'}
+                                    `}>
+                                        <div className={`w-[45vw] md:w-[320px] lg:w-[380px] max-h-[85vh]`}>
+                                            <img 
+                                                src={SHEN_QINGQIU_PIC} 
+                                                className="w-full h-auto object-contain"
+                                                style={{ maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)' }}
+                                                onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/300x600/065f46/d1fae5?text=Shen"; }}
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                </div>
                             </div>
                         </div>
+
                     </div>
                 )}
 
