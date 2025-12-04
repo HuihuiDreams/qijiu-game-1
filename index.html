@@ -246,7 +246,7 @@
             const [db, setDb] = React.useState(null);
             const [auth, setAuth] = React.useState(null);
             const [userId, setUserId] = React.useState(null); 
-            const [isAuthReady, setIsAuthReady] = React.useState(false);
+            const [isAuthReady, setIsAuthReady] = React.useState(false); // 关键：认证是否就绪
             
             const { isPlaying, play, toggle } = useAudio(BGM_URL);
 
@@ -299,44 +299,44 @@
                     return;
                 }
                 
-                // Initialize
+                // 1. Initialize Firebase services
                 const app = initializeApp(firebaseConfig);
                 const firestoreDb = getFirestore(app);
                 const firebaseAuth = getAuth(app);
                 setDb(firestoreDb);
                 setAuth(firebaseAuth);
 
-                // Sign In (FIXED: Explicitly setting userId on successful sign-in for faster UI update)
-                const authenticate = async () => {
-                    try {
-                        let userCredential;
-                        if (initialAuthToken) {
-                            userCredential = await signInWithCustomToken(firebaseAuth, initialAuthToken);
-                        } else {
-                            userCredential = await signInAnonymously(firebaseAuth); 
-                        }
-                        // Set state immediately after successful sign-in
-                        setUserId(userCredential.user.uid);
-                    } catch (error) {
-                        console.error("Firebase authentication failed:", error);
-                        // Ensure userId is null if sign-in fails
-                        setUserId(null);
-                    }
-                };
-
-                // Listen for Auth State Change (Source of truth)
+                // 2. Set up Auth State Listener (Source of truth for userId)
                 const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
                     if (user) {
                         console.log("User authenticated (via listener):", user.uid);
-                        setUserId(user.uid); // Ensures consistency
+                        setUserId(user.uid);
                     } else {
                         console.log("User signed out or failed to sign in (via listener).");
                         setUserId(null); 
                     }
-                    setIsAuthReady(true);
                 });
 
-                authenticate();
+                // 3. Perform Initial Sign-In Attempt (Async)
+                // FIX: 优化认证流程，确保在异步登录尝试结束后才将 isAuthReady 设置为 true，避免在加载时显示错误的“认证失败”。
+                const authenticateAndSetReady = async () => {
+                    try {
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(firebaseAuth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(firebaseAuth); 
+                        }
+                    } catch (error) {
+                        console.error("Firebase initial authentication failed:", error);
+                        // 即使登录失败，onAuthStateChanged 也会将 userId 设置为 null
+                    } finally {
+                        // 关键：只有在初始登录尝试完成后，才标记认证已就绪
+                        setIsAuthReady(true);
+                        console.log("Authentication attempt concluded. isAuthReady set to true.");
+                    }
+                };
+
+                authenticateAndSetReady();
                 
                 return () => unsubscribe();
             }, []);
@@ -347,6 +347,7 @@
                 if (!db || !currentUid) {
                     return null;
                 }
+                // 使用私有数据路径： /artifacts/{appId}/users/{userId}/game_saves/current_game
                 return doc(db, 'artifacts', appId, 'users', currentUid, 'game_saves', 'current_game');
             };
 
@@ -409,6 +410,7 @@
             };
             
             React.useEffect(() => {
+                // 仅在认证就绪且 db/auth 实例存在时检查存档状态
                 if (isAuthReady && db && auth) {
                     const checkSave = async () => {
                         const currentUid = auth.currentUser?.uid;
@@ -714,8 +716,12 @@
                                 </h1>
                                 <p className="text-slate-400 text-sm max-w-xs mx-auto pt-2 border-t border-slate-700/50">
                                     加载剧本：用户原创同人剧本<br/>
-                                    {/* FIXED: Improved display logic for userId status */}
-                                    用户ID：<span className="text-sky-400 font-mono text-xs">{isAuthReady ? (userId || '认证失败') : '加载中...'}</span>
+                                    {/* 修复：根据 isAuthReady 状态显示加载中、ID 或认证失败 */}
+                                    用户ID：<span className="text-sky-400 font-mono text-xs">
+                                        {isAuthReady 
+                                            ? (userId || '认证失败 (请刷新)') 
+                                            : '认证加载中...'}
+                                    </span>
                                 </p>
                                 <div className="space-y-4 pt-4">
                                     <button 
