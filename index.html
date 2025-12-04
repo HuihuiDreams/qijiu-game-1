@@ -56,6 +56,7 @@
     </style>
     
     <!-- 2. 加载 React, ReactDOM 和 Babel CDNs -->
+    <!-- FIX: 将 React 和 ReactDOM 版本更新到 v18 以支持 createRoot API -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -170,7 +171,7 @@
         );
         
         // --- Core React Hooks & Firebase Setup ---
-        const { useState, useEffect, useRef } = React;
+        // 确保使用 React.hook() 完整前缀
         const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, setDoc, getDoc } = window.firebase;
         
         // **资源 URL 占位符**
@@ -185,11 +186,11 @@
         
         // --- 音乐控制 Hook ---
         const useAudio = (url) => {
-            const audioRef = useRef(new Audio(url));
+            const audioRef = React.useRef(new Audio(url));
             audioRef.current.loop = true;
             audioRef.current.volume = 0.5;
 
-            const [isPlaying, setIsPlaying] = useState(false);
+            const [isPlaying, setIsPlaying] = React.useState(false);
             
             const play = () => {
                 if (!audioRef.current.src || audioRef.current.src === window.location.href) {
@@ -217,7 +218,7 @@
                 }
             };
 
-            useEffect(() => {
+            React.useEffect(() => {
                 audioRef.current.src = url;
 
                 return () => {
@@ -233,19 +234,19 @@
         // --- MAIN GAME COMPONENT ---
         const Game = () => {
             // --- Game State ---
-            const [scene, setScene] = useState('start');
-            const [dialogueIndex, setDialogueIndex] = useState(0);
-            const [typedText, setTypedText] = useState('');
-            const [isTyping, setIsTyping] = useState(false);
-            const [isMenuOpen, setIsMenuOpen] = useState(false);
-            const [message, setMessage] = useState(null); 
-            const [hasSave, setHasSave] = useState(false); 
+            const [scene, setScene] = React.useState('start');
+            const [dialogueIndex, setDialogueIndex] = React.useState(0);
+            const [typedText, setTypedText] = React.useState('');
+            const [isTyping, setIsTyping] = React.useState(false);
+            const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+            const [message, setMessage] = React.useState(null); 
+            const [hasSave, setHasSave] = React.useState(false); 
 
             // --- Firebase State ---
-            const [db, setDb] = useState(null);
-            const [auth, setAuth] = useState(null);
-            const [userId, setUserId] = useState(null); 
-            const [isAuthReady, setIsAuthReady] = useState(false);
+            const [db, setDb] = React.useState(null);
+            const [auth, setAuth] = React.useState(null);
+            const [userId, setUserId] = React.useState(null); 
+            const [isAuthReady, setIsAuthReady] = React.useState(false);
             
             const { isPlaying, play, toggle } = useAudio(BGM_URL);
 
@@ -291,7 +292,7 @@
             };
 
             // --- Firebase Initialization and Auth ---
-            useEffect(() => {
+            React.useEffect(() => {
                 if (!firebaseConfig) {
                     console.error("Firebase config is missing.");
                     setIsAuthReady(true);
@@ -305,26 +306,31 @@
                 setDb(firestoreDb);
                 setAuth(firebaseAuth);
 
-                // Sign In
+                // Sign In (FIXED: Explicitly setting userId on successful sign-in for faster UI update)
                 const authenticate = async () => {
                     try {
+                        let userCredential;
                         if (initialAuthToken) {
-                            await signInWithCustomToken(firebaseAuth, initialAuthToken);
+                            userCredential = await signInWithCustomToken(firebaseAuth, initialAuthToken);
                         } else {
-                            await signInAnonymously(firebaseAuth); 
+                            userCredential = await signInAnonymously(firebaseAuth); 
                         }
+                        // Set state immediately after successful sign-in
+                        setUserId(userCredential.user.uid);
                     } catch (error) {
                         console.error("Firebase authentication failed:", error);
+                        // Ensure userId is null if sign-in fails
+                        setUserId(null);
                     }
                 };
 
-                // Listen for Auth State Change
+                // Listen for Auth State Change (Source of truth)
                 const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
                     if (user) {
-                        console.log("User authenticated:", user.uid);
-                        setUserId(user.uid);
+                        console.log("User authenticated (via listener):", user.uid);
+                        setUserId(user.uid); // Ensures consistency
                     } else {
-                        console.log("User signed out or failed to sign in.");
+                        console.log("User signed out or failed to sign in (via listener).");
                         setUserId(null); 
                     }
                     setIsAuthReady(true);
@@ -402,7 +408,7 @@
                 }
             };
             
-            useEffect(() => {
+            React.useEffect(() => {
                 if (isAuthReady && db && auth) {
                     const checkSave = async () => {
                         const currentUid = auth.currentUser?.uid;
@@ -432,7 +438,7 @@
             // --- Game Flow Logic (Handle Next) ---
             
             // Typewriter Effect Logic
-            useEffect(() => {
+            React.useEffect(() => {
                 let currentText = "";
                 if (scene === 'dialogue') {
                     currentText = scenes.dialogue.lines[dialogueIndex].text;
@@ -708,7 +714,8 @@
                                 </h1>
                                 <p className="text-slate-400 text-sm max-w-xs mx-auto pt-2 border-t border-slate-700/50">
                                     加载剧本：用户原创同人剧本<br/>
-                                    用户ID：<span className="text-sky-400 font-mono text-xs">{userId || '加载中...'}</span>
+                                    {/* FIXED: Improved display logic for userId status */}
+                                    用户ID：<span className="text-sky-400 font-mono text-xs">{isAuthReady ? (userId || '认证失败') : '加载中...'}</span>
                                 </p>
                                 <div className="space-y-4 pt-4">
                                     <button 
@@ -921,6 +928,7 @@
 
         // 5. 启动 React 应用
         window.addEventListener('load', () => {
+            // 使用 React 18 的 createRoot API
             const root = ReactDOM.createRoot(document.getElementById('root'));
             root.render(<Game />);
         });
