@@ -1,636 +1,1273 @@
+不是这个啊，是这个。但这个也不是最新版本。最新那个我没有保存到github就被你扔了。
+
 <!DOCTYPE html>
+
 <html lang="zh-CN">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>沈清秋 & 岳清源：首席当日</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
+
         /* 使用 Inter 字体作为默认 */
+
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
         body {
+
             font-family: 'Inter', sans-serif;
+
             margin: 0;
+
             padding: 0;
+
             background-color: #0f172a; /* 匹配组件的 bg-slate-950 */
+
             overflow: hidden; /* 防止滚动 */
+
         }
+
         /* 确保根元素占据全屏 */
+
         #root {
+
             width: 100vw;
+
             height: 100vh;
+
         }
+
         .character-visual {
+
             /* 确保图片在容器内完全覆盖 */
+
             object-fit: cover;
+
             width: 100%;
+
             height: 100%;
+
         }
+
         /* 添加一些简单的动画类 */
+
         @keyframes fadeIn {
+
             from { opacity: 0; }
+
             to { opacity: 1; }
+
         }
+
         .animate-fade-in {
+
             animation: fadeIn 0.8s ease-in-out;
+
         }
+
         /* Loading Spinner */
+
         .spinner {
+
             border: 4px solid rgba(255, 255, 255, 0.1);
+
             border-top: 4px solid #06b6d4; /* cyan-500 */
+
             border-radius: 50%;
+
             width: 40px;
+
             height: 40px;
+
             animation: spin 1s linear infinite;
+
         }
+
         @keyframes spin {
+
             0% { transform: rotate(0deg); }
+
             100% { transform: rotate(360deg); }
+
         }
+
+
 
         /* 扫描线效果增强 */
+
         .scanlines {
+
             background: linear-gradient(
+
                 to bottom,
+
                 rgba(255,255,255,0),
+
                 rgba(255,255,255,0) 50%,
+
                 rgba(0,0,0,0.1) 50%,
+
                 rgba(0,0,0,0.1)
+
             );
+
             background-size: 100% 4px;
+
             animation: scanlineMove 10s linear infinite; 
+
         }
+
         /* 自定义滚动条隐藏 */
+
         .no-scrollbar::-webkit-scrollbar {
+
             display: none;
+
         }
+
         .no-scrollbar {
+
             -ms-overflow-style: none;
+
             scrollbar-width: none;
+
         }
+
     </style>
+
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
 </head>
+
 <body>
+
     <div id="root"></div>
 
+
+
     <script type="text/babel">
+
         // 简化版的 Lucide-React Icons
+
         const Icon = ({ children, size = 24, className = 'text-current' }) => (
+
             <svg 
+
                 xmlns="http://www.w3.org/2000/svg" 
+
                 width={size} 
+
                 height={size} 
+
                 viewBox="0 0 24 24" 
+
                 fill="none" 
+
                 stroke="currentColor" 
+
                 strokeWidth="2" 
+
                 strokeLinecap="round" 
+
                 strokeLinejoin="round" 
+
                 className={className}
+
             >
+
                 {children}
+
             </svg>
+
         );
+
+
 
         const Terminal = (props) => (
+
             <Icon {...props}>
+
                 <polyline points="4 17 10 11 4 5" />
+
                 <line x1="12" y1="19" x2="20" y2="19" />
+
             </Icon>
+
         );
+
+
 
         const AlertTriangle = (props) => (
+
             <Icon {...props}>
+
                 <path d="M10.29 3.86L2.39 20.34c-.21.46-.21.99 0 1.45.21.46.66.75 1.15.75h15.93c.49 0 .94-.29 1.15-.75.21-.46.21-.99 0-1.45L13.71 3.86c-.21-.46-.66-.75-1.15-.75s-.94.29-1.15.75z" />
+
                 <line x1="12" y1="9" x2="12" y2="13" />
+
                 <line x1="12" y1="17" x2="12.01" y2="17" />
+
             </Icon>
+
         );
+
         
+
         const Heart = (props) => (
+
             <Icon {...props}>
+
                 <path d="M19 14c1.49-1.46 3-3.23 3-5.5C22 6.07 19.93 4 17.5 4S13 7 13 7s-1.5-3-4.5-3C6.07 4 4 6.07 4 8.5c0 2.27 1.51 4.04 3 5.5l7 7 7-7z" />
+
             </Icon>
+
         );
+
+
 
         const RefreshCcw = (props) => (
+
             <Icon {...props}>
+
                 <path d="M21 12A9 9 0 0 0 6.19 6.19l-.78-.78" />
+
                 <path d="M3 12a9 9 0 0 0 14.81 5.81l.78.78" />
+
                 <path d="M2 17H6v4" />
+
                 <path d="M22 7H18V3" />
+
             </Icon>
+
         );
+
         
+
         const ShieldAlert = (props) => (
+
              <Icon {...props}>
+
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+
                 <path d="M12 8v4" />
+
                 <path d="M12 16h.01" />
+
             </Icon>
+
         );
+
+
 
         const Volume2 = (props) => (
+
              <Icon {...props}>
+
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+
                 <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+
             </Icon>
+
         );
+
+
 
         const VolumeX = (props) => (
+
              <Icon {...props}>
+
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+
                 <line x1="23" y1="9" x2="17" y2="15" />
+
                 <line x1="17" y1="9" x2="23" y2="15" />
+
             </Icon>
+
         );
 
+
+
         const { useState, useEffect, useRef } = React;
+
         
+
         // --- 资源 URL 统一管理 ---
+
         const BG_QINGJING = 'https://raw.githubusercontent.com/HuihuiDreams/qijiu-game-1/main/bk.JPG';
+
         const SHEN_QINGQIU_PIC = 'https://raw.githubusercontent.com/HuihuiDreams/qijiu-game-1/main/shenqingqiu.png'; 
+
         const YUE_QINGYUAN_PIC = 'https://raw.githubusercontent.com/HuihuiDreams/qijiu-game-1/main/yueqingyuan.png'; 
+
         const BGM_URL = 'https://raw.githubusercontent.com/HuihuiDreams/qijiu-game-1/main/baheng.mp3'; 
 
+
+
         // 音频控制 Hook
+
         const useAudio = (url) => {
+
             const audioRef = useRef(new Audio(url));
+
             
+
             useEffect(() => {
+
                 audioRef.current.loop = true;
+
                 audioRef.current.volume = 0.5;
+
             }, []);
 
+
+
             const [isPlaying, setIsPlaying] = useState(false);
+
             
+
             const play = () => {
+
                 // 确保在用户交互后才尝试播放，并处理Promise
+
                 const playPromise = audioRef.current.play();
+
                 if (playPromise !== undefined) {
+
                     playPromise.then(() => {
+
                         setIsPlaying(true);
+
                         console.log("Audio playback started successfully.");
+
                     }).catch(error => {
+
                         // 播放失败，通常是移动端的自动播放限制
+
                         console.log("Audio auto-play failed. User needs to interact again to enable.", error);
+
                         setIsPlaying(false);
+
                         // 不阻塞 UI，仅仅记录失败
+
                     });
+
                 }
+
             };
+
+
 
             const pause = () => {
+
                 audioRef.current.pause();
+
                 setIsPlaying(false);
+
             };
+
+
 
             const toggle = () => {
+
                 if (isPlaying) {
+
                     pause();
+
                 } else {
+
                     play();
+
                 }
+
             };
 
+
+
             useEffect(() => {
+
                 const audio = audioRef.current;
+
                 return () => {
+
                     audio.pause();
+
                     // 在组件卸载时清除资源
+
                     if (!url.startsWith('data:')) {
+
                         audio.removeAttribute('src');
+
                     }
+
                 };
+
             }, [url]);
 
+
+
             return { isPlaying, play, pause, toggle };
+
         };
+
+
+
 
 
         const Game = () => {
+
         const [scene, setScene] = useState('loading'); // 初始状态改为 loading
+
         const [dialogueIndex, setDialogueIndex] = useState(0);
+
         const [typedText, setTypedText] = useState('');
+
         const [isTyping, setIsTyping] = useState(false);
+
         const [isPreloaded, setIsPreloaded] = useState(false); // 新增预加载状态
+
         const { isPlaying, play, toggle } = useAudio(BGM_URL);
 
+
+
         // --- 模拟预加载 / 初始化组件 ---
+
         useEffect(() => {
+
             // 模拟加载时间，让组件有时间渲染，避免移动端初始白屏卡顿
+
             // 真实项目中这里应该放置图片和音频的fetch或Image().onload()逻辑
+
             const timer = setTimeout(() => {
+
                 setIsPreloaded(true);
+
                 setScene('start');
+
             }, 1000); // 至少等待1秒，确保初始渲染完成
 
+
+
             return () => clearTimeout(timer);
+
         }, []);
 
 
+
+
+
         // 剧本数据
+
         const scenes = {
+
             start: {
+
                 id: 'start',
+
             },
+
             dialogue: {
+
                 id: 'dialogue',
+
                 lines: [
+
                     { speaker: '背景', text: " 沈九被赐名沈清秋，成为清静峰首席当天。", mood: 'system' }, 
+
                     { speaker: '旁白', text: " 是夜。沈九终于忙完了，回到自己住处，却看见了此生无比厌烦的一个人，岳清源。", mood: 'narrative' },
+
                     { speaker: '旁白', text: " 原本沈清秋是想直接忽视他直接进屋舍休息，忙了一天，他很累了。", mood: 'narrative' },
+
                     { speaker: '旁白', text: " 即将擦肩而过的两人，这时，岳清源握住了他的手，沈清秋皱眉。", mood: 'narrative' },
+
                     { speaker: '沈清秋', text: " 放开，恶心。", mood: 'angry' },
+
                     { speaker: '岳清源', text: " 小九，我们一定要这样吗？", mood: 'sad' },
+
                     { speaker: '沈清秋', text: " 别喊那个名字！我们不是应该这样吗？岳清源！我们只能这样...", mood: 'angry' },
+
                 ]
+
             },
+
             choice: {
+
                 id: 'choice',
+
                 question: "剧情分支点：沈清秋的怒火燃烧，岳清源的选择将决定他们的未来。",
+
                 options: [
+
                     { 
+
                     id: 'A', 
+
                     text: "松开手，留下剑穗，转身离开", 
+
                     subtext: "（结局：求而不得 | 成就：一夜无眠）",
+
                     style: "gray"
+
                     },
+
                     { 
+
                     id: 'B', 
+
                     text: "【OOC强制介入】紧紧抱住，以吻封缄", 
+
                     subtext: "（解锁：岳七的疯狂 | 警告：关系值剧烈波动）",
+
                     style: "gold"
+
                     }
+
                 ]
+
             },
+
             endingA: {
+
                 id: 'endingA',
+
                 text: "岳清源松开了沈清秋的手，在离开之前，将准备好的首席弟子礼——竹柏剑穗放在沈清清秋的屋门口，离开了。沈清秋在人走远之后，才打开门，站了一夜。你获得了成就——一夜无眠。",
+
                 mood: 'bad'
+
             },
+
             endingB: {
+
                 id: 'endingB',
+
                 lines: [
+
                     { speaker: '旁白', text: "岳清源原本要放开的手，在松开的瞬间紧紧从沈清秋身后抱住他。", mood: 'narrative' },
+
                     { speaker: '沈清秋', text: "你做什么？！放开！", mood: 'angry' },
+
                     { speaker: '旁白', text: "沈清秋大怒，推开岳清源，扇了岳清源一巴掌。岳清源笑了一声，第一次用灵力压制沈清秋，像是被刺激到了什么。", mood: 'narrative' },
+
                     { speaker: '旁白', text: "他狠狠吻了上去，堵住了那张说不出一句软话的嘴，也堵住了自己解释的机会。", mood: 'narrative' },
+
                     { speaker: '系统', text: "【恭喜】达成隐藏成就：岳七的疯狂。下一次机会，又是什么时候呢？", mood: 'success' }
+
                 ]
+
             }
+
         };
+
+
 
         // 打字机效果
+
         useEffect(() => {
+
             if (scene === 'start' || scene === 'loading' || scene === 'choice' || scene === 'endingA') return;
 
+
+
             let currentText = "";
+
             if (scene === 'dialogue') {
+
                 currentText = scenes.dialogue.lines[dialogueIndex].text;
+
             } else if (scene === 'endingB') {
+
                 currentText = scenes.endingB.lines[dialogueIndex].text;
+
             }
+
+
 
             setTypedText('');
+
             setIsTyping(true);
+
             let i = 0;
+
             const speed = 30; 
 
+
+
             const timer = setInterval(() => {
+
                 if (i < currentText.length) {
+
                     setTypedText((prev) => prev + currentText.charAt(i));
+
                     i++;
+
                 } else {
+
                     setIsTyping(false);
+
                     clearInterval(timer);
+
                 }
+
             }, speed);
 
+
+
             return () => clearInterval(timer);
+
         }, [dialogueIndex, scene]);
 
+
+
         const handleNext = () => {
+
             if (isTyping) {
+
                 let fullText = scene === 'dialogue' 
+
                     ? scenes.dialogue.lines[dialogueIndex].text 
+
                     : scenes.endingB.lines[dialogueIndex].text;
+
                 setTypedText(fullText);
+
                 setIsTyping(false);
+
                 return;
+
             }
+
+
 
             if (scene === 'dialogue') {
+
                 if (dialogueIndex < scenes.dialogue.lines.length - 1) {
+
                     setDialogueIndex(prev => prev + 1);
+
                 } else {
+
                     setScene('choice');
+
                 }
+
             } else if (scene === 'endingB') {
+
                 if (dialogueIndex < scenes.endingB.lines.length - 1) {
+
                     setDialogueIndex(prev => prev + 1);
+
                 }
+
             }
+
         };
+
+
 
         const handleChoice = (option) => {
+
             if (option === 'A') {
+
                 setScene('endingA');
+
             } else {
+
                 setDialogueIndex(0);
+
                 setScene('endingB');
+
             }
+
         };
+
+
 
         const startGame = () => {
+
             // 在这里尝试播放音乐，利用用户点击操作来绕过移动端限制
+
             play(); 
+
             setScene('dialogue');
+
         }
+
+
 
         const resetGame = () => {
+
             setScene('start');
+
             setDialogueIndex(0);
+
             if (isPlaying) {
+
                 toggle(); // 暂停音乐
+
             }
+
         };
+
+
 
         // 角色名渲染
+
         const renderSpeakerName = (speaker) => {
+
              if (speaker === "沈清秋") return <span className="text-emerald-400 drop-shadow-md">沈清秋</span>;
+
              if (speaker === "岳清源") return <span className="text-indigo-400 drop-shadow-md">岳清源</span>;
+
              if (speaker === "系统") return <span className="text-blue-400 font-mono">系统</span>;
+
              return null;
+
         };
 
+
+
         // 获取当前 speaker
+
         const getCurrentSpeaker = () => {
+
             if (scene === 'dialogue') return scenes.dialogue.lines[dialogueIndex]?.speaker;
+
             if (scene === 'endingB') return scenes.endingB.lines[dialogueIndex]?.speaker;
+
             return null;
+
         }
 
+
+
         const currentSpeaker = getCurrentSpeaker();
+
         // 确定哪个角色在说话
+
         const isShenSpeaking = currentSpeaker === '沈清秋';
+
         const isYueSpeaking = currentSpeaker === '岳清源';
 
 
+
+
+
         return (
+
             <div className="w-full h-screen bg-black text-cyan-50 font-sans overflow-hidden relative select-none">
+
             
+
             {/* --- 1. 全屏背景层 (最底层) --- */}
+
             <div className="absolute inset-0 z-0">
+
                  <img 
+
                     src={BG_QINGJING} 
+
                     alt="Background"
+
                     className="w-full h-full object-cover opacity-60 transition-all duration-1000"
+
                     onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/1920x1080/101a2c/94a3b8?text=Background"; }}
+
                 />
+
                 {/* 黑色遮罩，让文字更清晰 */}
+
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/30"></div>
+
                 {/* 扫描线特效 */}
+
                 <div className="absolute inset-0 scanlines opacity-20 pointer-events-none"></div>
+
             </div>
 
+
+
             {/* --- 0. 加载画面 (Loading Screen) --- */}
+
             {!isPreloaded && (
+
                 <div className="absolute inset-0 flex items-center justify-center bg-slate-950/95 z-50">
+
                     <div className="text-center space-y-4">
+
                         <div className="spinner mx-auto"></div>
+
                         <p className="text-slate-400 font-mono text-sm">Initializing resources...</p>
+
                         <p className="text-slate-600 text-xs">(移动端首次加载可能较慢)</p>
+
                     </div>
+
                 </div>
+
             )}
+
+
+
 
 
             {/* 音乐控制按钮 - 只有在加载完成后才显示 */}
+
             {scene !== 'loading' && (
+
                 <button 
+
                     onClick={toggle}
+
                     className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 text-cyan-500 hover:bg-cyan-900/50 transition-all border border-cyan-800/50 backdrop-blur-sm"
+
                     title={isPlaying ? "暂停音乐" : "播放音乐"}
+
                 >
+
                     {isPlaying ? <Volume2 size={20} /> : <VolumeX size={20} />}
+
                 </button>
+
             )}
 
+
+
             {/* --- 2. 游戏内容层 --- */}
+
             <div className="absolute inset-0 z-10 flex flex-col justify-between">
+
                 
+
                 {/* === Start Screen === */}
+
                 {scene === 'start' && isPreloaded && (
+
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fade-in">
+
                         <div className="text-center space-y-8">
+
                             <div className="w-24 h-24 bg-cyan-900/20 rounded-full border border-cyan-500/50 flex items-center justify-center mx-auto shadow-[0_0_50px_rgba(6,182,212,0.2)]">
+
                                 <Terminal size={48} className="text-cyan-400" />
+
                             </div>
+
                             <div>
+
                                 <h1 className="text-5xl md:text-6xl font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-cyan-100 to-cyan-700 drop-shadow-2xl">
+
                                     首席当日
+
                                 </h1>
+
                                 <p className="text-slate-400 mt-4 tracking-[0.2em] uppercase text-sm">Shen Qingqiu & Yue Qingyuan</p>
+
                             </div>
+
                             <button 
+
                                 onClick={startGame}
+
                                 className="px-10 py-4 bg-cyan-950/80 border border-cyan-500/50 hover:bg-cyan-500 hover:text-black hover:border-cyan-400 transition-all duration-500 rounded-sm text-sm font-mono tracking-widest uppercase shadow-[0_0_20px_rgba(6,182,212,0.1)]"
+
                             >
+
                                 [ Initialize ]
+
                             </button>
+
                             <p className="text-xs text-slate-500 max-w-xs mx-auto pt-4">
+
                                 * 移动设备需点击按钮后才能播放背景音乐。
+
                             </p>
+
                         </div>
+
                     </div>
+
                 )}
+
+
 
                 {/* === Main Gameplay Area (左右布局) === */}
+
                 {(scene === 'dialogue' || scene === 'endingB') && (
+
                     <div className="w-full h-full flex flex-col md:flex-row items-end justify-between animate-fade-in relative">
+
                         
+
                         {/* --- 左侧：对话框区域 (Text Box) --- */}
+
                         <div className="w-full md:w-[65%] lg:w-[70%] h-auto md:h-auto order-2 md:order-1 relative z-20 pb-0 md:pb-12 pl-0 md:pl-12 pr-0 md:pr-0">
+
                             <div 
+
                                 onClick={handleNext}
+
                                 className="w-full bg-gradient-to-t from-slate-950 via-slate-900/95 to-slate-900/80 border-t md:border border-slate-700/50 backdrop-blur-md min-h-[30vh] md:min-h-[280px] p-6 md:p-10 relative cursor-pointer hover:bg-slate-900/90 transition-colors shadow-[0_-10px_50px_rgba(0,0,0,0.8)] md:rounded-tr-xl md:rounded-br-none"
+
                             >
+
                                 {/* 名字栏 (Name Tag) */}
+
                                 {currentSpeaker && currentSpeaker !== '旁白' && currentSpeaker !== '背景' && (
+
                                     <div className="absolute top-0 left-8 transform -translate-y-1/2 bg-slate-900 border border-slate-600 px-6 py-2 rounded shadow-lg flex items-center gap-2 z-30">
+
                                         <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></div>
+
                                         <span className="font-bold text-lg tracking-wider text-slate-100 font-serif">
+
                                             {renderSpeakerName(currentSpeaker)}
+
                                         </span>
+
                                     </div>
+
                                 )}
 
+
+
                                 {/* 文本内容 */}
+
                                 <div className="max-w-4xl h-full flex flex-col">
+
                                     <p className={`text-lg md:text-2xl leading-relaxed text-slate-200 ${currentSpeaker === '旁白' || currentSpeaker === '背景' ? 'font-sans text-slate-400 italic' : 'font-serif'}`}>
+
                                         {/* 渲染文本 */}
+
                                         {scene === 'endingB' && dialogueIndex === scenes.endingB.lines.length - 1 
+
                                             ? scenes.endingB.lines[dialogueIndex].text 
+
                                             : typedText
+
                                         }
+
                                         
+
                                         {/* 光标 */}
+
                                         {!(scene === 'endingB' && dialogueIndex === scenes.endingB.lines.length - 1) && (
+
                                             <span className="inline-block ml-1 w-2 h-6 bg-cyan-500 align-sub animate-pulse"></span>
+
                                         )}
+
                                     </p>
+
                                 </div>
+
+
 
                                 {/* 点击提示 */}
+
                                 <div className="absolute bottom-4 right-8 text-slate-500 text-xs font-mono animate-bounce flex items-center gap-1">
+
                                     <span>NEXT</span>
+
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l12 8-12 8V4z"/></svg>
+
                                 </div>
+
                             </div>
+
                         </div>
+
+
 
                         {/* --- 右侧：立绘展示区 (Character Stage) --- */}
+
                         <div className="w-full md:w-[35%] lg:w-[30%] h-[50vh] md:h-full order-1 md:order-2 relative z-10 pointer-events-none">
+
                             <div className="absolute bottom-0 right-0 w-full h-full flex items-end justify-center md:justify-end px-4 md:pr-12 pb-0 overflow-hidden">
+
                                 
+
                                 {/* 容器：用于并排或层叠放置立绘 */}
+
                                 <div className="relative w-full h-full max-w-[500px] md:max-w-none flex items-end justify-center md:justify-end">
+
                                     
+
                                     {/* 立绘 1: 岳清源 */}
+
                                     <div className={`absolute bottom-0 right-1/2 md:right-0 transform translate-x-1/2 md:translate-x-0 transition-all duration-500 ease-out origin-bottom
+
                                         ${isYueSpeaking ? 'opacity-100 scale-105 z-20 drop-shadow-[0_0_20px_rgba(99,102,241,0.9)]' : 'opacity-0 scale-95 z-10'}
+
                                     `}>
+
                                         <div className={`w-[45vw] md:w-[320px] lg:w-[380px] max-h-[85vh]`}>
+
                                             <img 
+
                                                 src={YUE_QINGYUAN_PIC} 
+
                                                 className="w-full h-auto object-contain"
+
                                                 style={{ maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)' }}
+
                                                 onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/300x600/292b6a/c7d2fe?text=Yue"; }}
+
                                             />
+
                                         </div>
+
                                     </div>
+
+
 
                                     {/* 立绘 2: 沈清秋 */}
+
                                     <div className={`absolute bottom-0 right-1/2 md:right-0 transform translate-x-1/2 md:translate-x-0 transition-all duration-500 ease-out origin-bottom
+
                                         ${isShenSpeaking ? 'opacity-100 scale-105 z-20 drop-shadow-[0_0_20px_rgba(16,185,129,0.9)]' : 'opacity-0 scale-95 z-10'}
+
                                     `}>
+
                                         <div className={`w-[45vw] md:w-[320px] lg:w-[380px] max-h-[85vh]`}>
+
                                             <img 
+
                                                 src={SHEN_QINGQIU_PIC} 
+
                                                 className="w-full h-auto object-contain"
+
                                                 style={{ maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)' }}
+
                                                 onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/300x600/065f46/d1fae5?text=Shen"; }}
+
                                             />
+
                                         </div>
+
                                     </div>
+
                                     
+
                                 </div>
+
                             </div>
+
                         </div>
 
+
+
                     </div>
+
                 )}
+
+
 
                 {/* === Choice Overlay === */}
+
                 {scene === 'choice' && (
+
                     <div className="absolute inset-0 z-40 bg-black/80 backdrop-blur-sm flex items-center justify-center animate-fade-in">
+
                         <div className="max-w-2xl w-full mx-4 space-y-8">
+
                              <div className="flex items-center gap-3 text-red-500 border-b border-red-900/50 pb-4">
+
                                 <AlertTriangle className="animate-pulse" size={28} />
+
                                 <h2 className="text-2xl font-bold tracking-widest font-serif">命运抉择</h2>
+
                             </div>
+
                             
+
                             <p className="text-slate-300 text-lg md:text-xl font-serif leading-relaxed">
+
                                 {scenes.choice.question}
+
                             </p>
+
+
 
                             <div className="grid gap-6">
-                                <button 
-                                    onClick={() => handleChoice('A')}
-                                    className="group text-left p-6 border border-slate-700 bg-slate-900/80 hover:bg-slate-800 hover:border-slate-500 transition-all rounded"
-                                >
-                                    <div className="text-slate-400 font-bold text-lg group-hover:text-slate-200">
-                                        <span className="mr-4 text-slate-600">A.</span>
-                                        {scenes.choice.options[0].text}
-                                    </div>
-                                    <div className="text-sm text-slate-600 mt-2 pl-8 group-hover:text-slate-500">
-                                        {scenes.choice.options[0].subtext}
-                                    </div>
-                                </button>
 
                                 <button 
-                                    onClick={() => handleChoice('B')}
-                                    className="group text-left p-6 border border-amber-900/50 bg-amber-950/30 hover:bg-amber-900/50 hover:border-amber-500/50 transition-all rounded relative overflow-hidden"
+
+                                    onClick={() => handleChoice('A')}
+
+                                    className="group text-left p-6 border border-slate-700 bg-slate-900/80 hover:bg-slate-800 hover:border-slate-500 transition-all rounded"
+
                                 >
-                                    <div className="relative z-10">
-                                        <div className="text-amber-500 font-bold text-lg group-hover:text-amber-200 flex items-center justify-between">
-                                            <div>
-                                                <span className="mr-4 text-amber-800">B.</span>
-                                                {scenes.choice.options[1].text}
-                                            </div>
-                                            <Heart size={20} className="text-red-500 animate-pulse" />
-                                        </div>
-                                        <div className="text-sm text-amber-800/80 mt-2 pl-8 group-hover:text-amber-600 font-mono">
-                                            {scenes.choice.options[1].subtext}
-                                        </div>
+
+                                    <div className="text-slate-400 font-bold text-lg group-hover:text-slate-200">
+
+                                        <span className="mr-4 text-slate-600">A.</span>
+
+                                        {scenes.choice.options[0].text}
+
                                     </div>
+
+                                    <div className="text-sm text-slate-600 mt-2 pl-8 group-hover:text-slate-500">
+
+                                        {scenes.choice.options[0].subtext}
+
+                                    </div>
+
                                 </button>
+
+
+
+                                <button 
+
+                                    onClick={() => handleChoice('B')}
+
+                                    className="group text-left p-6 border border-amber-900/50 bg-amber-950/30 hover:bg-amber-900/50 hover:border-amber-500/50 transition-all rounded relative overflow-hidden"
+
+                                >
+
+                                    <div className="relative z-10">
+
+                                        <div className="text-amber-500 font-bold text-lg group-hover:text-amber-200 flex items-center justify-between">
+
+                                            <div>
+
+                                                <span className="mr-4 text-amber-800">B.</span>
+
+                                                {scenes.choice.options[1].text}
+
+                                            </div>
+
+                                            <Heart size={20} className="text-red-500 animate-pulse" />
+
+                                        </div>
+
+                                        <div className="text-sm text-amber-800/80 mt-2 pl-8 group-hover:text-amber-600 font-mono">
+
+                                            {scenes.choice.options[1].subtext}
+
+                                        </div>
+
+                                    </div>
+
+                                </button>
+
                             </div>
+
                         </div>
+
                     </div>
+
                 )}
+
+
 
                 {/* === Ending A Overlay === */}
+
                 {scene === 'endingA' && (
+
                     <div className="absolute inset-0 z-40 bg-slate-950/90 flex flex-col items-center justify-center p-8 text-center animate-fade-in">
+
                         <ShieldAlert size={80} className="text-slate-700 mb-8" />
+
                         <h2 className="text-3xl font-serif text-slate-400 mb-6">结局：一夜无眠</h2>
+
                         <p className="text-slate-500 max-w-lg leading-loose text-lg mb-12">
+
                             {scenes.endingA.text}
+
                         </p>
+
                         <button 
+
                             onClick={resetGame}
+
                             className="flex items-center gap-3 px-6 py-3 border border-slate-700 text-slate-400 hover:text-cyan-400 hover:border-cyan-500 transition-all rounded-full"
+
                         >
+
                             <RefreshCcw size={18} />
+
                             <span>重新开始</span>
+
                         </button>
+
                     </div>
+
                 )}
+
+
 
                  {/* === Ending B Success Overlay (Last Frame) === */}
+
                  {scene === 'endingB' && dialogueIndex === scenes.endingB.lines.length - 1 && (
+
                     <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+
                         <div className="bg-black/80 border-y-2 border-amber-500/50 w-full py-12 backdrop-blur-md flex flex-col items-center justify-center text-center animate-fade-in pointer-events-auto">
+
                              <h2 className="text-4xl font-bold text-amber-400 mb-4 tracking-widest drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]">
+
                                 HIDDEN ENDING UNLOCKED
+
                             </h2>
+
                             <p className="text-amber-200/80 text-xl font-serif mb-8">
+
                                 达成成就：岳七的疯狂
+
                             </p>
+
                             <button 
+
                                 onClick={resetGame}
+
                                 className="px-8 py-2 bg-amber-900/20 border border-amber-600/50 text-amber-400 hover:bg-amber-500 hover:text-black transition-all rounded uppercase tracking-widest text-sm"
+
                             >
+
                                 Return to Title
+
                             </button>
+
                         </div>
+
                     </div>
+
                 )}
 
+
+
             </div>
+
             </div>
+
         );
+
         };
 
+
+
         window.addEventListener('load', () => {
+
             const root = ReactDOM.createRoot(document.getElementById('root'));
+
             root.render(<Game />);
+
         });
+
     </script>
+
 </body>
+
 </html>
