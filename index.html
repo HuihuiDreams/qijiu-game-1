@@ -193,18 +193,32 @@
         // --- Core React Hooks & Firebase Setup ---
         const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, setDoc, getDoc } = window.firebase;
         
-        // **资源 URL：改为相对路径 (Relative Paths)**
-        // 既然部署在 Netlify，图片和音乐文件就在您的仓库里。
-        // 直接使用 ./文件名，让用户的浏览器直接从 Netlify 加载，不再经过 GitHub 或 CDN。
-        // 请确保这些文件都在您的 GitHub 仓库根目录中，且文件名大小写完全一致！
+        // **资源 URL 切换区**
+        // ---------------------------------------------------------------------------
+        // 💡 调试说明：
+        // 1. 如果你在 AI 的 Preview 窗口里看，使用 【选项 A (CDN)】，否则看不到图。
+        // 2. 如果你要 Push 到 GitHub 部署给国内用户看，使用 【选项 B (相对路径)】。
+        // ---------------------------------------------------------------------------
+
+        // 【选项 A】CDN 链接 (在 Preview 里使用这个！)
+        /*
+        const BG_QINGJING = 'https://cdn.jsdelivr.net/gh/HuihuiDreams/qijiu-game-1@main/bk.JPG'; 
+        const SHEN_QINGQIU_PIC = 'https://cdn.jsdelivr.net/gh/HuihuiDreams/qijiu-game-1@main/shenqingqiu.png'; 
+        const YUE_QINGYUAN_PIC = 'https://cdn.jsdelivr.net/gh/HuihuiDreams/qijiu-game-1@main/yueqingyuan.png'; 
+        const BGM_URL = 'https://cdn.jsdelivr.net/gh/HuihuiDreams/qijiu-game-1@main/baheng.mp3'; 
+        const ENDING_B_PIC = 'https://cdn.jsdelivr.net/gh/HuihuiDreams/qijiu-game-1@main/Image.png';
+        const START_SCREEN_PIC = 'https://cdn.jsdelivr.net/gh/HuihuiDreams/qijiu-game-1@main/qijiu_start_screen.png';
+        */
+
+        // 【选项 B】相对路径 (部署到 Netlify 时，请取消下面注释，并注释掉上面那些！)
+        
         const BG_QINGJING = './bk.JPG'; 
         const SHEN_QINGQIU_PIC = './shenqingqiu.png'; 
         const YUE_QINGYUAN_PIC = './yueqingyuan.png'; 
         const BGM_URL = './baheng.mp3'; 
-        // 结局图 URL
         const ENDING_B_PIC = './Image.png';
-        // 开始画面图 URL
         const START_SCREEN_PIC = './qijiu_start_screen.png';
+        
         
         // --- 音乐控制 Hook ---
         const useAudio = (url) => {
@@ -222,7 +236,8 @@
                 audioRef.current.play().then(() => {
                     setIsPlaying(true);
                 }).catch(error => {
-                    console.error("Audio auto-play failed. User interaction needed.", error);
+                    // console.error("Audio auto-play failed. User interaction needed.", error);
+                    // 静默处理，不报错，因为我们现在默认不播放
                     setIsPlaying(false);
                 });
             };
@@ -448,7 +463,8 @@
                         setDialogueIndex(data.dialogueIndex);
                         displayMessage("读档成功！已恢复进度。", 'success');
                         
-                        if (!isPlaying) play();
+                        // FIX: 读取存档时不自动播放音乐，防止卡顿
+                        // if (!isPlaying) play(); 
                     } else {
                         displayMessage("没有找到存档文件。", 'warning');
                         setHasSave(false);
@@ -557,7 +573,8 @@
                 } else {
                     setDialogueIndex(0);
                     setScene('dialogue');
-                    play();
+                    // FIX: 开始游戏时不自动播放音乐
+                    // play();
                 }
             }
 
