@@ -193,15 +193,18 @@
         // --- Core React Hooks & Firebase Setup ---
         const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, setDoc, getDoc } = window.firebase;
         
-        // **资源 URL 占位符 (已替换为 jsDelivr CDN 以加速国内访问)**
-        const BG_QINGJING = 'https://cdn.jsdelivr.net/gh/HuihuiDreams/qijiu-game-1@main/bk.JPG'; 
-        const SHEN_QINGQIU_PIC = 'https://cdn.jsdelivr.net/gh/HuihuiDreams/qijiu-game-1@main/shenqingqiu.png'; 
-        const YUE_QINGYUAN_PIC = 'https://cdn.jsdelivr.net/gh/HuihuiDreams/qijiu-game-1@main/yueqingyuan.png'; 
-        const BGM_URL = 'https://cdn.jsdelivr.net/gh/HuihuiDreams/qijiu-game-1@main/baheng.mp3'; 
+        // **资源 URL：改为相对路径 (Relative Paths)**
+        // 既然部署在 Netlify，图片和音乐文件就在您的仓库里。
+        // 直接使用 ./文件名，让用户的浏览器直接从 Netlify 加载，不再经过 GitHub 或 CDN。
+        // 请确保这些文件都在您的 GitHub 仓库根目录中，且文件名大小写完全一致！
+        const BG_QINGJING = './bk.JPG'; 
+        const SHEN_QINGQIU_PIC = './shenqingqiu.png'; 
+        const YUE_QINGYUAN_PIC = './yueqingyuan.png'; 
+        const BGM_URL = './baheng.mp3'; 
         // 结局图 URL
-        const ENDING_B_PIC = 'https://cdn.jsdelivr.net/gh/HuihuiDreams/qijiu-game-1@main/Image.png';
+        const ENDING_B_PIC = './Image.png';
         // 开始画面图 URL
-        const START_SCREEN_PIC = 'https://cdn.jsdelivr.net/gh/HuihuiDreams/qijiu-game-1@main/qijiu_start_screen.png';
+        const START_SCREEN_PIC = './qijiu_start_screen.png';
         
         // --- 音乐控制 Hook ---
         const useAudio = (url) => {
