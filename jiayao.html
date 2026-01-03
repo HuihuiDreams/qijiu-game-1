@@ -6,7 +6,7 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>安定峰采购假药引发的惨案 VN风</title>
-    <meta name="description" content="一个关于修仙界丹药与爱恨情仇的视觉小说。">
+    <meta name="description" content="七九同人视觉小说">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -662,43 +662,15 @@
                 return () => clearInterval(timerRef.current);
             }, [gameState.lineIndex, gameState.sceneId]); // 依赖索引来触发
 
-            const prevGameState = useRef({ sceneId: 'start' });
-
-            // 自动存档逻辑：保存"上一句话"
+            // 自动存档逻辑
             useEffect(() => {
-                const currentSceneId = gameState.sceneId;
-
-                // 如果当前是开始界面，仅更新 ref，不存档
-                if (currentSceneId === 'start') {
-                    prevGameState.current = gameState;
-                    return;
-                }
-
-                // 获取上一个状态
-                const prevState = prevGameState.current;
-                const prevSceneId = prevState.sceneId;
-                const prevScene = SCENES[prevSceneId];
-
-                // 检查上一个状态类型
-                // 如果上一个状态是名为 choice 的场景，或者类型是 choice（代码中是 type: 'choice'）
-                const prevIsChoice = prevScene?.type === 'choice';
-                const prevIsStart = prevSceneId === 'start';
-
-                // 核心逻辑：
-                // 1. 我们要存的是 prevState (即"上一句话")
-                // 2. 如果 prevState 是选项页面(Choice)，则不进行覆盖存档。
-                //    这样存档就会停留在"选项前的最后一句话"，符合"如果是结局的话改成选项前一句话"的要求。
-                // 3. 如果 prevState 是 Start，也不存。
-                if (!prevIsStart && !prevIsChoice) {
+                if (gameState.sceneId !== 'start') {
                     localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify({
-                        ...prevState,
+                        ...gameState,
                         timestamp: Date.now()
                     }));
                 }
-
-                // 更新上一状态为当前状态，供下一次 render 使用
-                prevGameState.current = gameState;
-            }, [gameState]);
+            }, [gameState]); // 每当 gameState 变化时触发
 
             const saveGame = () => {
                 localStorage.setItem(MANUAL_SAVE_KEY, JSON.stringify({
