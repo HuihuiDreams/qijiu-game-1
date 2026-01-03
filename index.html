@@ -579,7 +579,7 @@
             const [isMenuOpen, setIsMenuOpen] = useState(false);
             const [typingText, setTypingText] = useState('');
             const [isTyping, setIsTyping] = useState(false);
-            const [bgmPlaying, setBgmPlaying] = useState(false);
+            const [audioEnabled, setAudioEnabled] = useState(false);
 
             const audioRef = useRef(new Audio(ASSETS.audio.bgm));
             const timerRef = useRef(null);
@@ -602,22 +602,18 @@
                     e.preventDefault();
                     e.stopPropagation();
                 }
+
+                const newEnabled = !audioEnabled;
+                setAudioEnabled(newEnabled);
                 const audio = audioRef.current;
 
-                // 以实际播放状态为准
-                if (!audio.paused) {
-                    audio.pause();
-                    setBgmPlaying(false);
+                if (newEnabled) {
+                    audio.play().catch(error => {
+                        console.error("Audio play failed:", error);
+                        // 如果播放失败（如浏览器策略限制），可能需要重置状态，但这里暂保持开启意图
+                    });
                 } else {
-                    const playPromise = audio.play();
-                    if (playPromise !== undefined) {
-                        playPromise.then(() => {
-                            setBgmPlaying(true);
-                        }).catch(error => {
-                            console.error("Audio play failed:", error);
-                            setBgmPlaying(false);
-                        });
-                    }
+                    audio.pause();
                 }
             };
 
@@ -635,7 +631,7 @@
                 }
 
                 // 音效播放
-                if (currentLine.sound) {
+                if (currentLine.sound && audioEnabled) {
                     const sfx = new Audio(currentLine.sound);
                     sfx.volume = 0.6;
                     sfx.play().catch(() => { });
@@ -762,8 +758,6 @@
                     return html`<${StartScreen} 
                         onStart=${() => {
                             setGameState({ sceneId: 'chapter1', lineIndex: 0, bg: ASSETS.bg.qiancao });
-                            // 用户交互后尝试播放音乐
-                            audioRef.current.play().then(() => setBgmPlaying(true)).catch(() => { });
                         }} 
                         onLoad=${loadGame} 
                         hasSave=${!!(localStorage.getItem(MANUAL_SAVE_KEY) || localStorage.getItem(AUTO_SAVE_KEY))} 
@@ -845,7 +839,7 @@
 
                         <!-- 全局音乐开关 (右上角更紧凑) -->
                         <button onClick=${toggleAudio} class="volume-btn-mobile absolute top-2 right-2 md:top-4 md:right-4 z-[60] p-2 md:p-3 text-cyan-500 hover:text-cyan-300 transition-all drop-shadow-lg hover:scale-110 active:scale-95" title="音乐开关">
-                             ${bgmPlaying ? html`<${Icons.Volume2} size=${24} class="md:w-8 md:h-8 filter drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />` : html`<${Icons.VolumeX} size=${24} class="md:w-8 md:h-8 text-slate-500 filter drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />`}
+                             ${audioEnabled ? html`<${Icons.Volume2} size=${24} class="md:w-8 md:h-8 filter drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />` : html`<${Icons.VolumeX} size=${24} class="md:w-8 md:h-8 text-slate-500 filter drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />`}
                         </button>
 
                         <!-- 菜单模态框 -->
