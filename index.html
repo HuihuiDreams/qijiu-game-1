@@ -588,12 +588,13 @@
             const MANUAL_SAVE_KEY = 'qijiu_manual_save';
             const AUTO_SAVE_KEY = 'qijiu_auto_save';
 
-            // 播放 BGM
+            // 播放 BGM - 仅在用户明确启用时播放
             useEffect(() => {
                 const audio = audioRef.current;
                 audio.loop = true;
                 audio.volume = 0.4;
-                // 移除 cleanup 以确保持续播放
+                // 确保初始状态下音频是暂停的
+                audio.pause();
                 return () => { };
             }, []);
 
@@ -602,20 +603,24 @@
                     e.preventDefault();
                     e.stopPropagation();
                 }
+                // 只切换状态，实际的音频控制由 useEffect 处理
+                setAudioEnabled(prev => !prev);
+            };
 
-                const newEnabled = !audioEnabled;
-                setAudioEnabled(newEnabled);
+            // 确保音频状态与 audioEnabled 保持同步
+            useEffect(() => {
                 const audio = audioRef.current;
-
-                if (newEnabled) {
+                if (audioEnabled) {
+                    // 只有在明确启用时才播放
                     audio.play().catch(error => {
                         console.error("Audio play failed:", error);
-                        // 如果播放失败（如浏览器策略限制），可能需要重置状态，但这里暂保持开启意图
+                        setAudioEnabled(false);
                     });
                 } else {
+                    // 确保音频暂停
                     audio.pause();
                 }
-            };
+            }, [audioEnabled]);
 
             // 场景数据获取
             const currentScene = SCENES[gameState.sceneId];
@@ -656,7 +661,7 @@
                 }, 30); // 速度
 
                 return () => clearInterval(timerRef.current);
-            }, [gameState.lineIndex, gameState.sceneId]); // 依赖索引来触发
+            }, [gameState.lineIndex, gameState.sceneId, audioEnabled]); // 依赖索引来触发
 
             const prevGameState = useRef({ sceneId: 'start' });
 
