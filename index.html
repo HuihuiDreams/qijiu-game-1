@@ -478,7 +478,7 @@
         };
 
         // 3. 对话框组件
-        const DialogueBox = ({ speaker, text, onNext, isTyping, typingText, isNarrative }) => {
+        const DialogueBox = ({ speaker, text, onNext, isTyping, typingText, isNarrative, onLog, onAuto, onSkip, isAuto, isSkip }) => {
             // 颜色映射
             const getColors = (name) => {
                 if (name === '沈清秋') return { text: 'text-emerald-300', border: 'border-emerald-600/50' };
@@ -499,7 +499,7 @@
                                 ${speaker}
                             </div>
                         `}
-                        <div class="dialogue-glass rounded-lg md:rounded-xl p-1.5 md:p-4 lg:p-8 h-20 md:h-32 lg:h-52 hover:bg-slate-900/40 transition-colors cursor-pointer border ${colors.border} overflow-hidden flex flex-col relative">
+                        <div class="dialogue-glass rounded-lg md:rounded-xl p-1.5 md:p-4 lg:p-8 h-20 md:h-32 lg:h-52 hover:bg-slate-900/40 transition-colors cursor-pointer border ${colors.border} overflow-hidden flex flex-col relative group/box">
                             <div class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent pr-1">
                                 <p class="font-serif-sc text-xs md:text-lg lg:text-2xl leading-relaxed whitespace-pre-wrap ${isNarrative ? 'italic text-slate-300' : 'text-slate-100 font-bold'}">
                                     ${typingText}
@@ -507,8 +507,21 @@
                                 </p>
                             </div>
                             
-                            ${!isTyping && html`
-                                <div class="absolute bottom-1 right-2 md:bottom-2 md:right-4 lg:bottom-4 lg:right-6 animate-bounce text-cyan-500/50">
+                            <!-- 按钮组 (整合进对话框右下角) -->
+                            <div class="absolute bottom-1 right-1 md:bottom-2 md:right-2 flex gap-1 md:gap-2 z-50 opacity-100 md:opacity-0 md:group-hover/box:opacity-100 transition-opacity duration-300" onClick=${e => e.stopPropagation()}>
+                                 <button onClick=${onLog} class="p-1 md:p-1.5 bg-slate-800/80 hover:bg-cyan-900/80 rounded text-cyan-200/80 hover:text-cyan-100 transition-colors" title="回放">
+                                    <${Icons.FileText} size=${14} class="md:w-5 md:h-5" />
+                                </button>
+                                <button onClick=${onAuto} class="p-1 md:p-1.5 ${isAuto ? 'bg-cyan-600 text-white' : 'bg-slate-800/80 text-cyan-200/80'} hover:bg-cyan-700 rounded transition-colors" title="自动">
+                                    <${isAuto ? Icons.Pause : Icons.Play} size=${14} class="md:w-5 md:h-5" />
+                                </button>
+                                <button onClick=${onSkip} class="p-1 md:p-1.5 ${isSkip ? 'bg-amber-600 text-white' : 'bg-slate-800/80 text-cyan-200/80'} hover:bg-amber-700 rounded transition-colors" title="快进">
+                                    <${Icons.FastForward} size=${14} class="md:w-5 md:h-5" />
+                                </button>
+                            </div>
+
+                            ${!isTyping && !isAuto && !isSkip && html`
+                                <div class="absolute bottom-1 right-1 md:bottom-4 md:right-4 animate-bounce text-cyan-500/50 pointer-events-none">
                                     <svg width="12" height="12" class="md:w-4 md:h-4 lg:w-6 lg:h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-6-6h12z"/></svg>
                                 </div>
                             `}
@@ -770,8 +783,8 @@
             // Auto Mode 监听
             useEffect(() => {
                 if (isAuto && !isTyping && !isSkip && currentScene?.lines) {
-                    // 计算阅读时间：基础1秒 + 每字50ms
-                    const delay = 1000 + (currentLine?.text?.length || 0) * 150;
+                    // 计算阅读时间：基础0.5秒 + 每字80ms (大幅加快)
+                    const delay = 500 + (currentLine?.text?.length || 0) * 80;
                     if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
                     autoTimerRef.current = setTimeout(() => {
                         handleNext(true);
@@ -945,16 +958,6 @@
                         </div>
                     </div>
 
-                    ${!isHistoryOpen && html`
-                        <${QuickMenu} 
-                            onLog=${() => setIsHistoryOpen(true)}
-                            onAuto=${() => { setIsAuto(!isAuto); setIsSkip(false); }}
-                            onSkip=${() => { setIsSkip(!isSkip); setIsAuto(false); }}
-                            isAuto=${isAuto}
-                            isSkip=${isSkip}
-                        />
-                    `}
-
                     <div class="absolute bottom-0 w-full z-30 pb-0">
                         <${DialogueBox} 
                             speaker=${speaker} 
@@ -963,9 +966,15 @@
                             isTyping=${isTyping}
                             onNext=${() => handleNext(false)} 
                             isNarrative=${isNarrative}
+                            onLog=${() => setIsHistoryOpen(true)}
+                            onAuto=${() => { setIsAuto(!isAuto); setIsSkip(false); }}
+                            onSkip=${() => { setIsSkip(!isSkip); setIsAuto(false); }}
+                            isAuto=${isAuto}
+                            isSkip=${isSkip}
                         />
                     </div>
 
+                    <!-- 顶部菜单按钮 (手机端仅图标) -->
                     <button onClick=${() => setIsMenuOpen(true)} class="absolute top-2 left-2 md:top-4 md:left-4 z-40 p-2 md:px-4 md:py-2 bg-slate-900/80 rounded-full hover:bg-slate-800 text-cyan-500 backdrop-blur border border-cyan-500/30 flex items-center gap-2 shadow-lg transition-all group highlight-none">
                         <${Icons.Menu} size=${18} />
                         <span class="menu-label font-bold text-sm group-hover:text-cyan-300 hidden md:inline">菜单</span>
