@@ -642,9 +642,11 @@
                                         `}
                                         
                                         <!-- Hover Effect for Empty Save Slot -->
-                                        ${!save && isSave && html`
-                                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-cyan-900/20 transition-opacity">
-                                                <span class="text-cyan-400 font-bold border border-cyan-500/50 px-3 py-1 rounded-full bg-black/50 backdrop-blur">新建存档</span>
+                                        ${!save && html`
+                                            <div class="absolute inset-0 flex items-center justify-center bg-cyan-900/10 border-2 border-dashed border-cyan-800/50 rounded-lg hover:bg-cyan-900/20 transition-all">
+                                                <span class="text-cyan-400/80 font-bold border border-cyan-500/50 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur shadow-lg">
+                                                    ${mode === 'save' ? '点击新建存档' : '空存档'}
+                                                </span>
                                             </div>
                                         `}
                                     </div>
@@ -774,8 +776,9 @@
                 const audio = audioRef.current;
                 audio.loop = true;
                 audio.volume = 0.4;
+                // Init: ensure pause
                 audio.pause();
-                return () => { };
+                return () => { audio.pause(); };
             }, []);
 
             const toggleAudio = (e) => {
@@ -783,21 +786,28 @@
                     e.preventDefault();
                     e.stopPropagation();
                 }
-                setAudioEnabled(prev => !prev);
-            };
+                const nextState = !audioEnabled;
+                setAudioEnabled(nextState);
 
-            useEffect(() => {
                 const audio = audioRef.current;
-                if (audioEnabled) {
-                    audio.play().catch(error => {
-                        console.error("Audio play failed:", error);
-                        setAudioEnabled(false);
-                    });
+                if (nextState) {
+                    // Mobile: Play directly in user event
+                    const playPromise = audio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.error("Audio play failed / blocked:", error);
+                            setAudioEnabled(false); // Revert state if blocked
+                        });
+                    }
                 } else {
                     audio.pause();
                 }
-            }, [audioEnabled]);
+            };
 
+            // Remove previous side-effect for BGM to avoid loop/freeze
+            // useEffect(() => { ... }, [audioEnabled]); 
+
+            // 场景数据获取
             const currentScene = SCENES[gameState.sceneId];
             const currentLine = currentScene?.lines ? currentScene.lines[gameState.lineIndex] : null;
 
@@ -904,7 +914,13 @@
             };
 
             const handleSaveSlot = (slotId) => {
-                if (window.confirm(`覆盖存档 ${slotId} ?`)) {
+                const existingData = localStorage.getItem(`${SAVE_SLOT_PREFIX}${slotId}`);
+                // Improve prompt logic
+                const promptMsg = existingData
+                    ? `是否覆盖 存档 ${slotId} ?`
+                    : `是否在 存档 ${slotId} 创建新存档?`;
+
+                if (window.confirm(promptMsg)) {
                     const saveData = {
                         ...gameState,
                         timestamp: Date.now(),
@@ -913,7 +929,7 @@
                     };
                     localStorage.setItem(`${SAVE_SLOT_PREFIX}${slotId}`, JSON.stringify(saveData));
                     setRefreshSaves(prev => prev + 1);
-                    // alert('存档成功');
+                    alert(`存档 ${slotId} 保存成功！`);
                 }
             };
 
