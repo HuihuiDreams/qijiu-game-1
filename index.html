@@ -190,6 +190,13 @@
                 right: 0.2rem !important;
                 padding: 0.25rem !important;
             }
+
+            /* 手机横屏：快捷菜单位置调整 */
+            .mobile-landscape-bottom-adjust {
+                bottom: 5rem !important;
+                right: 0.5rem !important;
+                gap: 0.5rem !important;
+            }
         }
     </style>
 </head>
@@ -406,7 +413,7 @@
             'endingBE2': {
                 type: 'ending',
                 title: '陌路',
-                text: "沈清秋看着递过来的玄肃，冷笑一声，推开了岳清源的手。他转身走出废墟，从此修真界再无清静峰主，只有一个流浪的残废散修。岳清源守着苍穹山，孤独终老。",
+                text: "沈清秋看着递过来的玄肃，冷笑一声，推开了岳清源的手。他转身走出废墟，从此修真界再无清静峰主，只有一个流浪的散修。岳清源守着苍穹山，孤独终老。",
                 bg: ASSETS.bg.ruin
             }
         };
@@ -426,6 +433,11 @@
             Save: (p) => html`<${Icon} ...${p} path=${html`<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" />`} />`,
             Upload: (p) => html`<${Icon} ...${p} path=${html`<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />`} />`,
             RefreshCcw: (p) => html`<${Icon} ...${p} path=${html`<path d="M21 12A9 9 0 0 0 6.19 6.19l-.78-.78" /><path d="M3 12a9 9 0 0 0 14.81 5.81l.78.78" /><path d="M2 17H6v4" /><path d="M22 7H18V3" />`} />`,
+            FileText: (p) => html`<${Icon} ...${p} path=${html`<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><line x1="10" y1="9" x2="8" y2="9" />`} />`,
+            Play: (p) => html`<${Icon} ...${p} path=${html`<polygon points="5 3 19 12 5 21 5 3" />`} />`,
+            Pause: (p) => html`<${Icon} ...${p} path=${html`<rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />`} />`,
+            FastForward: (p) => html`<${Icon} ...${p} path=${html`<polygon points="13 19 22 12 13 5 13 19" /><polygon points="2 19 11 12 2 5 2 19" />`} />`,
+            X: (p) => html`<${Icon} ...${p} path=${html`<line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />`} />`,
         };
 
         // 2. 加载页面
@@ -587,32 +599,93 @@
             </div>
         `;
 
+        // 7. 历史记录模态框
+        const HistoryModal = ({ history, onClose }) => {
+            const endRef = useRef(null);
+
+            useEffect(() => {
+                if (endRef.current) {
+                    endRef.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, []);
+
+            return html`
+            <div class="absolute inset-0 z-[100] bg-black/90 backdrop-blur flex flex-col p-4 md:p-10 animate-in fade-in duration-300">
+                <div class="flex justify-between items-center mb-4 md:mb-6 border-b border-slate-700 pb-2 md:pb-4 shrink-0">
+                    <h2 class="text-xl md:text-3xl text-slate-100 font-serif-sc font-bold">剧情回放</h2>
+                    <button onClick=${onClose} class="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
+                        <${Icons.X} size=${24} class="md:w-8 md:h-8" />
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto custom-scroll pr-2 md:pr-4 space-y-4 md:space-y-6">
+                    ${history.length === 0 ? html`<div class="text-slate-500 text-center mt-20 italic font-serif-sc">暂无记录</div>` : null}
+                    ${history.map((item, index) => html`
+                        <div class="flex flex-col gap-1 items-start group">
+                            <span class="text-xs md:text-sm font-bold ${item.speaker === '旁白' ? 'text-slate-500' : 'text-cyan-400'} px-2 py-0.5 rounded bg-slate-800/50 border border-slate-700/50">
+                                ${item.speaker || '???'}
+                            </span>
+                            <p class="text-sm md:text-lg text-slate-300 font-serif-sc leading-relaxed bg-slate-900/30 p-2 md:p-3 rounded-lg w-full hover:bg-slate-800/50 transition-colors border-l-2 border-transparent hover:border-cyan-500/50">
+                                ${item.text}
+                            </p>
+                        </div>
+                    `)}
+                    <div ref=${endRef}></div>
+                </div>
+            </div>
+        `};
+
+        // 8. 快捷菜单
+        const QuickMenu = ({ onLog, onAuto, onSkip, isAuto, isSkip }) => html`
+            <div class="absolute bottom-24 md:bottom-36 lg:bottom-56 right-2 md:right-8 z-40 flex gap-2 md:gap-4 mobile-landscape-bottom-adjust">
+                <button onClick=${onLog} class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900/80 hover:bg-cyan-900/60 backdrop-blur rounded-full text-xs md:text-sm text-cyan-200 border border-cyan-500/20 hover:border-cyan-400 transition-all shadow-lg group">
+                    <${Icons.FileText} size=${14} class="group-hover:scale-110 transition-transform" />
+                    <span class="font-bold hidden md:inline">回放</span>
+                    <span class="font-bold md:hidden">Log</span>
+                </button>
+                <button onClick=${onAuto} class="flex items-center gap-1.5 px-3 py-1.5 ${isAuto ? 'bg-cyan-600/80 text-white shadow-[0_0_10px_rgba(8,145,178,0.5)]' : 'bg-slate-900/80 text-cyan-200'} hover:bg-cyan-700/80 backdrop-blur rounded-full text-xs md:text-sm border border-cyan-500/20 hover:border-cyan-400 transition-all shadow-lg group">
+                    <${isAuto ? Icons.Pause : Icons.Play} size=${14} class="group-hover:scale-110 transition-transform" />
+                    <span class="font-bold hidden md:inline">${isAuto ? '自动中' : '自动'}</span>
+                    <span class="font-bold md:hidden">Auto</span>
+                </button>
+                <button onClick=${onSkip} class="flex items-center gap-1.5 px-3 py-1.5 ${isSkip ? 'bg-amber-600/80 text-white shadow-[0_0_10px_rgba(217,119,6,0.5)]' : 'bg-slate-900/80 text-cyan-200'} hover:bg-amber-700/80 backdrop-blur rounded-full text-xs md:text-sm border border-cyan-500/20 hover:border-amber-400 transition-all shadow-lg group">
+                    <${Icons.FastForward} size=${14} class="group-hover:scale-110 transition-transform" />
+                    <span class="font-bold hidden md:inline">${isSkip ? '快进中' : '快进'}</span>
+                    <span class="font-bold md:hidden">Skip</span>
+                </button>
+            </div>
+        `;
+
         // --- 主逻辑 ---
         const App = () => {
             const [isLoading, setIsLoading] = useState(true);
             const [gameState, setGameState] = useState({
                 sceneId: 'start',
                 lineIndex: 0,
-                bg: ASSETS.bg.qingjing
+                bg: ASSETS.bg.qingjing,
+                history: [] // 历史记录
             });
             const [isMenuOpen, setIsMenuOpen] = useState(false);
+            const [isHistoryOpen, setIsHistoryOpen] = useState(false);
             const [typingText, setTypingText] = useState('');
             const [isTyping, setIsTyping] = useState(false);
             const [audioEnabled, setAudioEnabled] = useState(false);
+            // 新增状态
+            const [isAuto, setIsAuto] = useState(false);
+            const [isSkip, setIsSkip] = useState(false);
 
             const audioRef = useRef(new Audio(ASSETS.audio.bgm));
             const timerRef = useRef(null);
+            const autoTimerRef = useRef(null);
 
             // 存档 Keys
             const MANUAL_SAVE_KEY = 'qijiu_manual_save';
             const AUTO_SAVE_KEY = 'qijiu_auto_save';
 
-            // 播放 BGM - 仅在用户明确启用时播放
+            // 播放 BGM
             useEffect(() => {
                 const audio = audioRef.current;
                 audio.loop = true;
                 audio.volume = 0.4;
-                // 确保初始状态下音频是暂停的
                 audio.pause();
                 return () => { };
             }, []);
@@ -622,30 +695,25 @@
                     e.preventDefault();
                     e.stopPropagation();
                 }
-                // 只切换状态，实际的音频控制由 useEffect 处理
                 setAudioEnabled(prev => !prev);
             };
 
-            // 确保音频状态与 audioEnabled 保持同步
             useEffect(() => {
                 const audio = audioRef.current;
                 if (audioEnabled) {
-                    // 只有在明确启用时才播放
                     audio.play().catch(error => {
                         console.error("Audio play failed:", error);
                         setAudioEnabled(false);
                     });
                 } else {
-                    // 确保音频暂停
                     audio.pause();
                 }
             }, [audioEnabled]);
 
-            // 场景数据获取
             const currentScene = SCENES[gameState.sceneId];
             const currentLine = currentScene?.lines ? currentScene.lines[gameState.lineIndex] : null;
 
-            // 打字机效果
+            // 打字机与Auto/Skip逻辑
             useEffect(() => {
                 if (!currentLine) return;
 
@@ -654,21 +722,35 @@
                     setGameState(prev => ({ ...prev, bg: currentLine.bg }));
                 }
 
-                // 音效播放
-                if (currentLine.sound && audioEnabled) {
+                // 音效
+                if (currentLine.sound && audioEnabled && !isSkip) { // Skip时不播放音效或由浏览器自动处理（可能会堆叠，这里简单处理为不播放）
                     const sfx = new Audio(currentLine.sound);
                     sfx.volume = 0.6;
                     sfx.play().catch(() => { });
                 }
 
-                // 文字打字
                 const text = currentLine.text;
+
+                // 如果是Skip模式，直接显示全部
+                if (isSkip) {
+                    setTypingText(text);
+                    setIsTyping(false);
+
+                    // 极短延迟后跳转
+                    if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
+                    autoTimerRef.current = setTimeout(() => {
+                        handleNext(true); // true 表示自动触发
+                    }, 100);
+                    return;
+                }
+
                 setTypingText('');
                 setIsTyping(true);
                 let idx = 0;
 
                 if (timerRef.current) clearInterval(timerRef.current);
 
+                // 正常打字
                 timerRef.current = setInterval(() => {
                     if (idx < text.length) {
                         setTypingText(text.substring(0, idx + 1));
@@ -677,46 +759,49 @@
                         setIsTyping(false);
                         clearInterval(timerRef.current);
                     }
-                }, 30); // 速度
+                }, 30);
 
-                return () => clearInterval(timerRef.current);
-            }, [gameState.lineIndex, gameState.sceneId, audioEnabled]); // 依赖索引来触发
+                return () => {
+                    clearInterval(timerRef.current);
+                    if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
+                };
+            }, [gameState.lineIndex, gameState.sceneId, audioEnabled, isSkip]);
+
+            // Auto Mode 监听
+            useEffect(() => {
+                if (isAuto && !isTyping && !isSkip && currentScene?.lines) {
+                    // 计算阅读时间：基础1秒 + 每字50ms
+                    const delay = 1000 + (currentLine?.text?.length || 0) * 150;
+                    if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
+                    autoTimerRef.current = setTimeout(() => {
+                        handleNext(true);
+                    }, delay);
+                }
+                return () => {
+                    if (autoTimerRef.current && !isSkip) clearTimeout(autoTimerRef.current);
+                };
+            }, [isAuto, isTyping, gameState.lineIndex]); // 依赖 lineIndex 确保换行后重置定时器
 
             const prevGameState = useRef({ sceneId: 'start' });
 
-            // 自动存档逻辑：保存"上一句话"
             useEffect(() => {
                 const currentSceneId = gameState.sceneId;
-
-                // 如果当前是开始界面，仅更新 ref，不存档
                 if (currentSceneId === 'start') {
                     prevGameState.current = gameState;
                     return;
                 }
-
-                // 获取上一个状态
                 const prevState = prevGameState.current;
                 const prevSceneId = prevState.sceneId;
                 const prevScene = SCENES[prevSceneId];
-
-                // 检查上一个状态类型
-                // 如果上一个状态是名为 choice 的场景，或者类型是 choice（代码中是 type: 'choice'）
                 const prevIsChoice = prevScene?.type === 'choice';
                 const prevIsStart = prevSceneId === 'start';
 
-                // 核心逻辑：
-                // 1. 我们要存的是 prevState (即"上一句话")
-                // 2. 如果 prevState 是选项页面(Choice)，则不进行覆盖存档。
-                //    这样存档就会停留在"选项前的最后一句话"，符合"如果是结局的话改成选项前一句话"的要求。
-                // 3. 如果 prevState 是 Start，也不存。
                 if (!prevIsStart && !prevIsChoice) {
                     localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify({
                         ...prevState,
                         timestamp: Date.now()
                     }));
                 }
-
-                // 更新上一状态为当前状态，供下一次 render 使用
                 prevGameState.current = gameState;
             }, [gameState]);
 
@@ -733,36 +818,62 @@
                 try {
                     const key = type === 'auto' ? AUTO_SAVE_KEY : MANUAL_SAVE_KEY;
                     const savedStr = localStorage.getItem(key);
-
                     if (savedStr) {
                         const saved = JSON.parse(savedStr);
+                        // 兼容旧存档：如果没有history字段，补上
+                        if (!saved.history) saved.history = [];
                         setGameState(saved);
                         setIsMenuOpen(false);
+                        setIsHistoryOpen(false);
+                        setIsAuto(false);
+                        setIsSkip(false);
                     } else {
                         alert(type === 'auto' ? '暂无自动存档' : '暂无手动存档');
                     }
                 } catch (e) { console.error(e); }
             };
 
-            const handleNext = () => {
-                if (isTyping) {
-                    // 瞬间完成
-                    clearInterval(timerRef.current);
-                    setTypingText(currentLine.text);
-                    setIsTyping(false);
-                    return;
+            const handleNext = (isAutoTrigger = false) => {
+                // 如果是用户手动点击
+                if (!isAutoTrigger) {
+                    // 如果正在Skip，停止Skip
+                    if (isSkip) setIsSkip(false);
+                    // 如果正在Auto，停止Auto
+                    if (isAuto) setIsAuto(false);
+
+                    if (isTyping) {
+                        clearInterval(timerRef.current);
+                        setTypingText(currentLine.text);
+                        setIsTyping(false);
+                        return;
+                    }
                 }
 
                 if (currentScene.lines) {
+                    // 记录历史
+                    const newHistoryItem = { speaker: currentLine.speaker, text: currentLine.text };
+
                     if (gameState.lineIndex < currentScene.lines.length - 1) {
-                        setGameState(prev => ({ ...prev, lineIndex: prev.lineIndex + 1 }));
+                        setGameState(prev => ({
+                            ...prev,
+                            lineIndex: prev.lineIndex + 1,
+                            history: [...prev.history, newHistoryItem]
+                        }));
                     } else {
-                        // 章节结束，跳转
+                        // 章节结束
                         if (currentScene.next) {
-                            setGameState({
-                                sceneId: currentScene.next,
-                                lineIndex: 0,
-                                bg: prevBg => SCENES[currentScene.next].type === 'choice' ? prevBg : (SCENES[currentScene.next].lines?.[0]?.bg || prevBg)
+                            // 检查下一章是否是Ending或Choice
+                            const nextScene = SCENES[currentScene.next];
+
+                            // 保存本章最后一句到历史
+                            setGameState(prev => {
+                                const nextHistory = [...prev.history, newHistoryItem];
+                                return {
+                                    sceneId: currentScene.next,
+                                    lineIndex: 0,
+                                    bg: nextScene.type === 'choice' ? prev.bg : (nextScene.lines?.[0]?.bg || prev.bg),
+                                    history: nextHistory
+                                };
                             });
                         }
                     }
@@ -770,18 +881,23 @@
             };
 
             const handleChoice = (option) => {
-                setGameState({
+                // 选项被点击时，停止 Auto/Skip
+                setIsAuto(false);
+                setIsSkip(false);
+
+                setGameState(prev => ({
                     sceneId: option.next,
                     lineIndex: 0,
-                    bg: gameState.bg
-                });
+                    bg: prev.bg,
+                    history: prev.history // 历史记录保留
+                }));
             };
 
             const renderContent = () => {
                 if (gameState.sceneId === 'start') {
                     return html`<${StartScreen} 
                         onStart=${() => {
-                            setGameState({ sceneId: 'chapter1', lineIndex: 0, bg: ASSETS.bg.qiancao });
+                            setGameState({ sceneId: 'chapter1', lineIndex: 0, bg: ASSETS.bg.qiancao, history: [] });
                         }} 
                         onLoad=${loadGame} 
                         hasSave=${!!(localStorage.getItem(MANUAL_SAVE_KEY) || localStorage.getItem(AUTO_SAVE_KEY))} 
@@ -789,16 +905,24 @@
                 }
 
                 if (currentScene?.type === 'choice') {
+                    // Choice时 停止 Auto/Skip (双重保险)
+                    if (isAuto) setIsAuto(false);
+                    if (isSkip) setIsSkip(false);
                     return html`<${ChoiceScreen} question=${currentScene.question} options=${currentScene.options} onChoice=${handleChoice} />`;
                 }
 
                 if (currentScene?.type === 'ending') {
+                    // 结局时，重置所有状态
                     return html`
                         <div class="absolute inset-0 flex items-center justify-center bg-black/80 z-40 p-2 md:p-8 text-center animate-in fade-in duration-1000">
                              <div class="ending-container-mobile-landscape max-w-3xl w-full h-full flex flex-col items-center justify-center relative">
                                 <h1 class="ending-title-mobile-landscape text-3xl md:text-5xl font-calligraphy text-amber-500 mb-2 md:mb-6 tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] shrink-0">${currentScene.title}</h1>
                                 ${currentScene.text && html`<p class="ending-text-mobile-landscape text-slate-300 text-sm md:text-xl leading-relaxed text-left mx-auto mb-4 md:mb-10 font-serif-sc p-4 md:p-6 bg-slate-900/50 rounded-lg border border-slate-700/50 overflow-y-auto">${currentScene.text}</p>`}
-                                <button onClick=${() => setGameState({ sceneId: 'start', lineIndex: 0, bg: ASSETS.bg.qingjing })} class="ending-btn-mobile-landscape px-6 py-2 md:px-10 md:py-3 bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 border border-slate-500 text-slate-100 rounded text-base md:text-xl font-serif-sc tracking-widest shadow-lg transition-transform hover:scale-105 shrink-0">
+                                <button onClick=${() => {
+                            setGameState({ sceneId: 'start', lineIndex: 0, bg: ASSETS.bg.qingjing, history: [] });
+                            setIsAuto(false);
+                            setIsSkip(false);
+                        }} class="ending-btn-mobile-landscape px-6 py-2 md:px-10 md:py-3 bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 border border-slate-500 text-slate-100 rounded text-base md:text-xl font-serif-sc tracking-widest shadow-lg transition-transform hover:scale-105 shrink-0">
                                     返回标题
                                 </button>
                              </div>
@@ -806,38 +930,42 @@
                      `;
                 }
 
-                // 正常对话模式
                 const speaker = currentLine?.speaker;
                 const isSQQ = speaker === '沈清秋';
                 const isYQY = speaker === '岳清源';
                 const isNarrative = !speaker || speaker === '旁白';
 
                 return html`
-                    <!-- 立绘层: 仅在说话时显示 -->
                     <div class="absolute inset-0 z-10 flex items-end justify-center pointer-events-none">
-                        <!-- 岳清源 -->
                         <div class="w-1/2 h-full max-w-[500px] relative transition-all duration-500 ease-out ${isYQY ? 'translate-y-0 opacity-100 scale-105 z-20' : 'translate-y-4 opacity-0 scale-95 z-10'}">
                             <img src=${ASSETS.char.yqy} class="char-sprite absolute bottom-0 left-1/2 md:left-[40%] -translate-x-1/2 h-[85%] object-contain" />
                         </div>
-                        <!-- 沈清秋 -->
                         <div class="w-1/2 h-full max-w-[500px] relative transition-all duration-500 ease-out ${isSQQ ? 'translate-y-0 opacity-100 scale-105 z-20' : 'translate-y-4 opacity-0 scale-95 z-10'}">
                             <img src=${ASSETS.char.sqq} class="char-sprite absolute bottom-0 left-1/2 md:left-[60%] -translate-x-1/2 h-[85%] object-contain" />
                         </div>
                     </div>
 
-                    <!-- 对话层 -->
+                    ${!isHistoryOpen && html`
+                        <${QuickMenu} 
+                            onLog=${() => setIsHistoryOpen(true)}
+                            onAuto=${() => { setIsAuto(!isAuto); setIsSkip(false); }}
+                            onSkip=${() => { setIsSkip(!isSkip); setIsAuto(false); }}
+                            isAuto=${isAuto}
+                            isSkip=${isSkip}
+                        />
+                    `}
+
                     <div class="absolute bottom-0 w-full z-30 pb-0">
                         <${DialogueBox} 
                             speaker=${speaker} 
                             text=${currentLine?.text} 
                             typingText=${typingText}
                             isTyping=${isTyping}
-                            onNext=${handleNext} 
+                            onNext=${() => handleNext(false)} 
                             isNarrative=${isNarrative}
                         />
                     </div>
 
-                    <!-- 顶部菜单按钮 (手机端仅图标) -->
                     <button onClick=${() => setIsMenuOpen(true)} class="absolute top-2 left-2 md:top-4 md:left-4 z-40 p-2 md:px-4 md:py-2 bg-slate-900/80 rounded-full hover:bg-slate-800 text-cyan-500 backdrop-blur border border-cyan-500/30 flex items-center gap-2 shadow-lg transition-all group highlight-none">
                         <${Icons.Menu} size=${18} />
                         <span class="menu-label font-bold text-sm group-hover:text-cyan-300 hidden md:inline">菜单</span>
@@ -849,32 +977,32 @@
                 <div class="w-full h-full bg-black flex items-center justify-center overflow-hidden relative">
                     ${isLoading ? html`<${Preloader} onLoadComplete=${() => setIsLoading(false)} />` : null}
                     
-                    <!-- 16:9 游戏容器 (使用 min() 动态计算确保完全适配屏幕) -->
                     <div class="relative shadow-2xl bg-slate-900 overflow-hidden m-auto group/game flex-shrink-0" 
                          style="width: min(100%, 177.78dvh); aspect-ratio: 16/9;">
                         
-                        <!-- 动态背景 -->
                         <div class="absolute inset-0 z-0 transition-opacity duration-1000">
                             ${gameState.bg && html`<img src=${gameState.bg} class="w-full h-full object-cover filter brightness-[0.6]" />`}
                         </div>
 
-                        <!-- UI 层 -->
                         ${renderContent()}
 
-                        <!-- 全局音乐开关 (右上角更紧凑) -->
                         <button onClick=${toggleAudio} class="volume-btn-mobile absolute top-2 right-2 md:top-4 md:right-4 z-[60] p-2 md:p-3 text-cyan-500 hover:text-cyan-300 transition-all drop-shadow-lg hover:scale-110 active:scale-95" title="音乐开关">
                              ${audioEnabled ? html`<${Icons.Volume2} size=${24} class="md:w-8 md:h-8 filter drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />` : html`<${Icons.VolumeX} size=${24} class="md:w-8 md:h-8 text-slate-500 filter drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />`}
                         </button>
 
-                        <!-- 菜单模态框 -->
                         ${isMenuOpen && html`<${Menu}  
                             onClose=${() => setIsMenuOpen(false)} 
                             onSave=${saveGame} 
                             onLoad=${loadGame} 
                             onBackTitle=${() => {
-                        setGameState({ sceneId: 'start', lineIndex: 0, bg: ASSETS.bg.qingjing });
+                        setGameState({ sceneId: 'start', lineIndex: 0, bg: ASSETS.bg.qingjing, history: [] });
                         setIsMenuOpen(false);
                     }}
+                        />`}
+
+                        ${isHistoryOpen && html`<${HistoryModal}
+                            history=${gameState.history}
+                            onClose=${() => setIsHistoryOpen(false)}
                         />`}
                     </div>
                 </div>
