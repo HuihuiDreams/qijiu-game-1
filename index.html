@@ -438,6 +438,7 @@
             Pause: (p) => html`<${Icon} ...${p} path=${html`<rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />`} />`,
             FastForward: (p) => html`<${Icon} ...${p} path=${html`<polygon points="13 19 22 12 13 5 13 19" /><polygon points="2 19 11 12 2 5 2 19" />`} />`,
             X: (p) => html`<${Icon} ...${p} path=${html`<line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />`} />`,
+            Trash: (p) => html`<${Icon} ...${p} path=${html`<polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />`} />`,
         };
 
         // 2. 加载页面
@@ -532,7 +533,7 @@
         };
 
         // 4. 开始画面
-        const StartScreen = ({ onStart, onLoad, hasSave }) => html`
+        const StartScreen = ({ onStart, onLoad, hasAutoSave }) => html`
             <div class="absolute inset-0 z-40 bg-black flex flex-col items-center justify-center overflow-hidden">
                 <div class="absolute inset-0 animate-in zoom-in duration-[10s]">
                     <img src=${ASSETS.bg.start} class="w-full h-full object-cover opacity-60" />
@@ -548,16 +549,17 @@
                         <button onClick=${() => onStart()} class="px-4 py-1.5 mobile-landscape-btn md:px-8 md:py-3 bg-cyan-900/40 hover:bg-cyan-800/60 border border-cyan-500/30 text-cyan-100 text-lg md:text-2xl font-calligraphy rounded transition-all tracking-[0.2em] backdrop-blur-sm">
                             开始新游戏
                         </button>
-                        ${hasSave && html`
-                            <div class="flex gap-2 w-full">
-                                <button onClick=${() => onLoad('auto')} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/40 hover:bg-slate-700/60 border border-slate-500/30 text-slate-300 text-sm md:text-lg font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
-                                    读取自动存档
-                                </button>
-                                <button onClick=${() => onLoad('manual')} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/40 hover:bg-slate-700/60 border border-slate-500/30 text-slate-300 text-sm md:text-lg font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
-                                    读取手动存档
-                                </button>
-                            </div>
-                        `}
+                        
+                        <div class="flex gap-2 w-full">
+                            ${hasAutoSave && html`
+                            <button onClick=${() => onLoad('auto')} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/40 hover:bg-slate-700/60 border border-slate-500/30 text-amber-200/80 text-sm md:text-lg font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
+                                继续游戏
+                            </button>
+                            `}
+                            <button onClick=${() => onLoad('manual')} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/40 hover:bg-slate-700/60 border border-slate-500/30 text-slate-300 text-sm md:text-lg font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
+                                读取存档
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -583,30 +585,99 @@
             </div>
         `;
 
-        // 6. 菜单组件
-        const Menu = ({ onClose, onSave, onLoad, onBackTitle }) => html`
+        // 9. 存档/读档界面 (Mobile Friendly Grid)
+        const SaveLoadScreen = ({ mode, onClose, onSave, onLoad, saves, onDelete }) => {
+            const isSave = mode === 'save';
+            return html`
+                <div class="absolute inset-0 z-[60] bg-slate-950/95 backdrop-blur flex flex-col p-4 md:p-8 animate-in fade-in duration-300" onClick=${e => e.stopPropagation()}>
+                    <div class="flex justify-between items-center mb-6 shrink-0 border-b border-slate-800 pb-4">
+                        <h2 class="text-2xl md:text-4xl text-slate-100 font-serif-sc font-bold tracking-widest flex items-center gap-4">
+                            ${isSave ? '档案记录' : '档案读取'}
+                            <span class="text-sm md:text-lg text-slate-500 font-sans font-normal tracking-normal self-end mb-1">Select a Slot</span>
+                        </h2>
+                        <button onClick=${onClose} class="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
+                            <${Icons.X} size=${28} />
+                        </button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto custom-scroll pr-2">
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 pb-20">
+                             ${Array.from({ length: 12 }).map((_, i) => {
+                const id = i + 1;
+                const save = saves[id];
+                return html`
+                                    <div class="group relative aspect-[16/10] bg-slate-900 border-2 ${save ? 'border-slate-700 hover:border-cyan-500' : 'border-slate-800 hover:border-slate-600'} rounded-lg transition-all overflow-hidden flex flex-col cursor-pointer hover:shadow-[0_0_20px_rgba(0,0,0,0.5)] transform hover:-translate-y-1"
+                                         onClick=${() => isSave ? onSave(id) : (save && onLoad(id))}
+                                    >
+                                        <!-- Header: ID and Date -->
+                                        <div class="absolute top-0 left-0 right-0 p-2 bg-gradient-to-b from-black/80 to-transparent z-10 flex justify-between items-start text-[10px] md:text-xs">
+                                            <span class="font-bold text-slate-400 font-mono">NO.${id.toString().padStart(2, '0')}</span>
+                                            ${save && html`<span class="text-slate-300 bg-slate-900/50 px-1 rounded backdrop-blur-sm">${new Date(save.timestamp).toLocaleDateString()} ${new Date(save.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`}
+                                        </div>
+
+                                        <!-- Preview Image -->
+                                        <div class="absolute inset-0 bg-slate-800 flex items-center justify-center overflow-hidden">
+                                            ${save ? html`
+                                                <img src=${save.bg} class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                            ` : html`
+                                                <div class="text-slate-700 font-serif-sc text-sm">空存档</div>
+                                            `}
+                                        </div>
+
+                                        <!-- Preview Text (Bottom Overlay) -->
+                                        ${save && html`
+                                            <div class="absolute bottom-0 left-0 right-0 p-2 md:p-3 bg-gradient-to-t from-black/95 via-black/70 to-transparent z-10">
+                                                <div class="text-[10px] md:text-xs text-cyan-300 font-bold mb-0.5 truncate">${save.speaker || '???'}</div>
+                                                <div class="text-[11px] md:text-sm text-slate-300 font-serif-sc line-clamp-2 h-8 md:h-10 leading-tight opacity-90">${save.previewText}</div>
+                                            </div>
+                                        `}
+
+                                        <!-- Action Overlay (Delete) -->
+                                        ${save && html`
+                                            <div class="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button onClick=${(e) => { e.stopPropagation(); onDelete(id); }} class="p-1.5 bg-red-900/80 hover:bg-red-700 text-red-200 rounded-full backdrop-blur shadow-lg transition-colors" title="删除存档">
+                                                    <${Icons.Trash} size=${14} />
+                                                </button>
+                                            </div>
+                                        `}
+                                        
+                                        <!-- Hover Effect for Empty Save Slot -->
+                                        ${!save && isSave && html`
+                                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-cyan-900/20 transition-opacity">
+                                                <span class="text-cyan-400 font-bold border border-cyan-500/50 px-3 py-1 rounded-full bg-black/50 backdrop-blur">新建存档</span>
+                                            </div>
+                                        `}
+                                    </div>
+                                `;
+            })}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // 6. 菜单组件 (Modified for new Save/Load)
+        const Menu = ({ onClose, onOpenSave, onOpenLoad, onBackTitle }) => html`
             <div class="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick=${onClose}>
                 <div class="bg-slate-900 border border-slate-700 p-4 md:p-8 rounded-xl shadow-2xl w-[260px] md:w-[320px] flex flex-col gap-2 md:gap-4 max-h-full overflow-y-auto custom-scroll" onClick=${e => e.stopPropagation()}>
                     <h3 class="text-cyan-400 text-lg md:text-xl font-bold mb-1 md:mb-2 text-center shrink-0">系统菜单</h3>
                     
-                    <button onClick=${onSave} class="w-full p-3 md:p-4 bg-slate-800 hover:bg-cyan-900/30 text-slate-200 text-sm md:text-base rounded transition-colors border border-transparent hover:border-cyan-800 tracking-normal font-sans text-center font-bold shrink-0">
-                        保存当前进度
+                    <button onClick=${onOpenSave} class="w-full p-3 md:p-4 bg-slate-800 hover:bg-cyan-900/30 text-slate-200 text-sm md:text-base rounded transition-colors border border-transparent hover:border-cyan-800 tracking-normal font-sans text-center font-bold shrink-0">
+                        保存记录
                     </button>
 
-                    <div class="h-px bg-slate-800 my-0 md:my-1 shrink-0"></div>
-
-                     <button onClick=${() => onLoad('manual')} class="w-full p-3 md:p-4 bg-slate-800 hover:bg-indigo-900/30 text-slate-200 text-sm md:text-base rounded transition-colors border border-transparent hover:border-indigo-800 tracking-normal font-sans text-center font-bold shrink-0">
-                        读取手动存档
-                    </button>
-                    
-                     <button onClick=${() => onLoad('auto')} class="w-full p-3 md:p-4 bg-slate-800 hover:bg-indigo-900/30 text-slate-200 text-sm md:text-base rounded transition-colors border border-transparent hover:border-indigo-800 tracking-normal font-sans text-center font-bold shrink-0">
-                        读取自动存档
+                     <button onClick=${onOpenLoad} class="w-full p-3 md:p-4 bg-slate-800 hover:bg-indigo-900/30 text-slate-200 text-sm md:text-base rounded transition-colors border border-transparent hover:border-indigo-800 tracking-normal font-sans text-center font-bold shrink-0">
+                        读取记录
                     </button>
 
                     <div class="h-px bg-slate-800 my-0 md:my-1 shrink-0"></div>
                     
                     <button onClick=${onBackTitle} class="w-full p-3 md:p-4 bg-red-900/20 hover:bg-red-900/40 text-red-300 text-sm md:text-base rounded transition-colors tracking-normal font-sans text-center font-bold shrink-0">
                         返回标题
+                    </button>
+                    
+                    <button onClick=${onClose} class="mt-2 text-slate-500 hover:text-slate-300 text-sm text-center">
+                        关闭菜单
                     </button>
                 </div>
             </div>
@@ -679,6 +750,11 @@
             });
             const [isMenuOpen, setIsMenuOpen] = useState(false);
             const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+            // Save/Load States
+            const [isSaveLoadOpen, setIsSaveLoadOpen] = useState(false);
+            const [saveLoadMode, setSaveLoadMode] = useState('load'); // 'save' or 'load'
+            const [refreshSaves, setRefreshSaves] = useState(0); // Trigger re-render of saves
+
             const [typingText, setTypingText] = useState('');
             const [isTyping, setIsTyping] = useState(false);
             const [audioEnabled, setAudioEnabled] = useState(false);
@@ -690,9 +766,8 @@
             const timerRef = useRef(null);
             const autoTimerRef = useRef(null);
 
-            // 存档 Keys
-            const MANUAL_SAVE_KEY = 'qijiu_manual_save';
             const AUTO_SAVE_KEY = 'qijiu_auto_save';
+            const SAVE_SLOT_PREFIX = 'qijiu_save_slot_';
 
             // 播放 BGM
             useEffect(() => {
@@ -804,10 +879,9 @@
                     return;
                 }
                 const prevState = prevGameState.current;
-                const prevSceneId = prevState.sceneId;
-                const prevScene = SCENES[prevSceneId];
+                const prevScene = SCENES[prevState.sceneId];
                 const prevIsChoice = prevScene?.type === 'choice';
-                const prevIsStart = prevSceneId === 'start';
+                const prevIsStart = prevState.sceneId === 'start';
 
                 if (!prevIsStart && !prevIsChoice) {
                     localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify({
@@ -818,34 +892,63 @@
                 prevGameState.current = gameState;
             }, [gameState]);
 
-            const saveGame = () => {
-                localStorage.setItem(MANUAL_SAVE_KEY, JSON.stringify({
-                    ...gameState,
-                    timestamp: Date.now()
-                }));
-                alert('手动存档成功');
-                setIsMenuOpen(false);
+
+            // --- New Save/Load Logic ---
+            const getAllSaves = () => {
+                const saves = {};
+                for (let i = 1; i <= 12; i++) {
+                    const data = localStorage.getItem(`${SAVE_SLOT_PREFIX}${i}`);
+                    if (data) saves[i] = JSON.parse(data);
+                }
+                return saves;
             };
 
-            const loadGame = (type = 'manual') => {
-                try {
-                    const key = type === 'auto' ? AUTO_SAVE_KEY : MANUAL_SAVE_KEY;
-                    const savedStr = localStorage.getItem(key);
-                    if (savedStr) {
-                        const saved = JSON.parse(savedStr);
-                        // 兼容旧存档：如果没有history字段，补上
-                        if (!saved.history) saved.history = [];
+            const handleSaveSlot = (slotId) => {
+                if (window.confirm(`覆盖存档 ${slotId} ?`)) {
+                    const saveData = {
+                        ...gameState,
+                        timestamp: Date.now(),
+                        previewText: currentLine?.text || '剧情片段',
+                        speaker: currentLine?.speaker || '旁白'
+                    };
+                    localStorage.setItem(`${SAVE_SLOT_PREFIX}${slotId}`, JSON.stringify(saveData));
+                    setRefreshSaves(prev => prev + 1);
+                    // alert('存档成功');
+                }
+            };
+
+            const handleLoadSlot = (slotId) => {
+                const data = localStorage.getItem(`${SAVE_SLOT_PREFIX}${slotId}`);
+                if (data) {
+                    if (window.confirm(`读取存档 ${slotId} ?\n当前未保存的进度将丢失。`)) {
+                        const saved = JSON.parse(data);
                         setGameState(saved);
+                        setIsSaveLoadOpen(false);
                         setIsMenuOpen(false);
                         setIsHistoryOpen(false);
                         setIsAuto(false);
                         setIsSkip(false);
-                    } else {
-                        alert(type === 'auto' ? '暂无自动存档' : '暂无手动存档');
                     }
-                } catch (e) { console.error(e); }
+                }
             };
 
+            const handleDeleteSlot = (slotId) => {
+                if (window.confirm(`确认删除存档 ${slotId} ?`)) {
+                    localStorage.removeItem(`${SAVE_SLOT_PREFIX}${slotId}`);
+                    setRefreshSaves(prev => prev + 1);
+                }
+            };
+
+            const loadAutoSave = () => {
+                const data = localStorage.getItem(AUTO_SAVE_KEY);
+                if (data) {
+                    setGameState(JSON.parse(data));
+                } else {
+                    alert('没有找到自动存档');
+                }
+            };
+
+            // --- Navigation Logic ---
             const handleNext = (isAutoTrigger = false) => {
                 // 如果是用户手动点击
                 if (!isAutoTrigger) {
@@ -912,8 +1015,15 @@
                         onStart=${() => {
                             setGameState({ sceneId: 'chapter1', lineIndex: 0, bg: ASSETS.bg.qiancao, history: [] });
                         }} 
-                        onLoad=${loadGame} 
-                        hasSave=${!!(localStorage.getItem(MANUAL_SAVE_KEY) || localStorage.getItem(AUTO_SAVE_KEY))} 
+                        onLoad=${(type) => {
+                            if (type === 'manual') {
+                                setSaveLoadMode('load');
+                                setIsSaveLoadOpen(true);
+                            } else {
+                                loadAutoSave();
+                            }
+                        }}
+                        hasAutoSave=${!!localStorage.getItem(AUTO_SAVE_KEY)}
                     />`;
                 }
 
@@ -1001,8 +1111,8 @@
 
                         ${isMenuOpen && html`<${Menu}  
                             onClose=${() => setIsMenuOpen(false)} 
-                            onSave=${saveGame} 
-                            onLoad=${loadGame} 
+                            onOpenSave=${() => { setSaveLoadMode('save'); setIsSaveLoadOpen(true); }}
+                            onOpenLoad=${() => { setSaveLoadMode('load'); setIsSaveLoadOpen(true); }}
                             onBackTitle=${() => {
                         setGameState({ sceneId: 'start', lineIndex: 0, bg: ASSETS.bg.qingjing, history: [] });
                         setIsMenuOpen(false);
@@ -1012,6 +1122,15 @@
                         ${isHistoryOpen && html`<${HistoryModal}
                             history=${gameState.history}
                             onClose=${() => setIsHistoryOpen(false)}
+                        />`}
+
+                        ${isSaveLoadOpen && html`<${SaveLoadScreen} 
+                            mode=${saveLoadMode}
+                            saves=${getAllSaves()}
+                            onClose=${() => setIsSaveLoadOpen(false)}
+                            onSave=${handleSaveSlot}
+                            onLoad=${handleLoadSlot}
+                            onDelete=${handleDeleteSlot}
                         />`}
                     </div>
                 </div>
