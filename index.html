@@ -197,6 +197,11 @@
                 right: 0.5rem !important;
                 gap: 0.5rem !important;
             }
+
+            /* 手机横屏：存档界面强制2列 */
+            .mobile-landscape-grid-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
         }
     </style>
 </head>
@@ -601,7 +606,7 @@
                     </div>
 
                     <div class="flex-1 overflow-y-auto custom-scroll pr-2">
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 pb-20">
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 pb-20 mobile-landscape-grid-2">
                              ${Array.from({ length: 12 }).map((_, i) => {
                 const id = i + 1;
                 const save = saves[id];
