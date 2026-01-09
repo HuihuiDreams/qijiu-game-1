@@ -664,7 +664,7 @@
         };
 
         // 6. 菜单组件 (Modified for new Save/Load)
-        const Menu = ({ onClose, onOpenSave, onOpenLoad, onBackTitle }) => html`
+        const Menu = ({ onClose, onOpenSave, onOpenLoad, onOpenSettings, onBackTitle }) => html`
             <div class="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick=${onClose}>
                 <div class="bg-slate-900 border border-slate-700 p-4 md:p-8 rounded-xl shadow-2xl w-[260px] md:w-[320px] flex flex-col gap-2 md:gap-4 max-h-full overflow-y-auto custom-scroll" onClick=${e => e.stopPropagation()}>
                     <h3 class="text-cyan-400 text-lg md:text-xl font-bold mb-1 md:mb-2 text-center shrink-0">系统菜单</h3>
@@ -675,6 +675,10 @@
 
                      <button onClick=${onOpenLoad} class="w-full p-3 md:p-4 bg-slate-800 hover:bg-indigo-900/30 text-slate-200 text-sm md:text-base rounded transition-colors border border-transparent hover:border-indigo-800 tracking-normal font-sans text-center font-bold shrink-0">
                         读取记录
+                    </button>
+
+                    <button onClick=${onOpenSettings} class="w-full p-3 md:p-4 bg-slate-800 hover:bg-emerald-900/30 text-slate-200 text-sm md:text-base rounded transition-colors border border-transparent hover:border-emerald-800 tracking-normal font-sans text-center font-bold shrink-0">
+                        设置
                     </button>
 
                     <div class="h-px bg-slate-800 my-0 md:my-1 shrink-0"></div>
@@ -689,6 +693,56 @@
                 </div>
             </div>
         `;
+
+        // 设置界面
+        const SettingsScreen = ({ textSpeed, onTextSpeedChange, onClose }) => {
+            // Speed ranges: 10 (fast) - 80 (slow). Default is 30.
+            const speedLabels = [
+                { value: 10, label: '极快' },
+                { value: 20, label: '快' },
+                { value: 30, label: '正常' },
+                { value: 50, label: '慢' },
+                { value: 80, label: '极慢' },
+            ];
+            const currentLabel = speedLabels.reduce((prev, curr) =>
+                Math.abs(curr.value - textSpeed) < Math.abs(prev.value - textSpeed) ? curr : prev
+            ).label;
+
+            return html`
+                <div class="absolute inset-0 z-[60] bg-slate-950/95 backdrop-blur flex flex-col items-center justify-center p-4 md:p-8 animate-in fade-in duration-300" onClick=${e => e.stopPropagation()}>
+                    <div class="bg-slate-900 border border-slate-700 p-6 md:p-10 rounded-xl shadow-2xl w-full max-w-md flex flex-col gap-6">
+                        <div class="flex justify-between items-center border-b border-slate-700 pb-4">
+                            <h2 class="text-2xl md:text-3xl text-slate-100 font-serif-sc font-bold">设置</h2>
+                            <button onClick=${onClose} class="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
+                                <${Icons.X} size=${24} />
+                            </button>
+                        </div>
+
+                        <div class="flex flex-col gap-4">
+                            <div class="flex flex-col gap-2">
+                                <label class="text-slate-300 font-bold flex justify-between items-center">
+                                    <span>文字速度</span>
+                                    <span class="text-cyan-400 text-sm font-normal bg-slate-800 px-2 py-0.5 rounded">${currentLabel}</span>
+                                </label>
+                                <input 
+                                    type="range" 
+                                    min="10" 
+                                    max="80" 
+                                    step="5"
+                                    value=${textSpeed}
+                                    onInput=${(e) => onTextSpeedChange(parseInt(e.target.value))}
+                                    class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                                />
+                                <div class="flex justify-between text-xs text-slate-500">
+                                    <span>快</span>
+                                    <span>慢</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
 
         // 7. 历史记录模态框
         const HistoryModal = ({ history, onClose }) => {
@@ -765,9 +819,24 @@
             const [typingText, setTypingText] = useState('');
             const [isTyping, setIsTyping] = useState(false);
             const [audioEnabled, setAudioEnabled] = useState(false);
-            // 新增状态
             const [isAuto, setIsAuto] = useState(false);
             const [isSkip, setIsSkip] = useState(false);
+            const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+            // Settings
+            const SETTINGS_KEY = 'qijiu_settings';
+            const loadSettings = () => {
+                try {
+                    const saved = localStorage.getItem(SETTINGS_KEY);
+                    return saved ? JSON.parse(saved) : { textSpeed: 30 };
+                } catch { return { textSpeed: 30 }; }
+            };
+            const [textSpeed, setTextSpeed] = useState(() => loadSettings().textSpeed);
+
+            const handleTextSpeedChange = (newSpeed) => {
+                setTextSpeed(newSpeed);
+                localStorage.setItem(SETTINGS_KEY, JSON.stringify({ textSpeed: newSpeed }));
+            };
 
             const audioRef = useRef(new Audio(ASSETS.audio.bgm));
             const timerRef = useRef(null);
@@ -853,7 +922,7 @@
 
                 if (timerRef.current) clearInterval(timerRef.current);
 
-                // 正常打字
+                // 正常打字 - 使用 textSpeed 变量
                 timerRef.current = setInterval(() => {
                     if (idx < text.length) {
                         setTypingText(text.substring(0, idx + 1));
@@ -862,7 +931,7 @@
                         setIsTyping(false);
                         clearInterval(timerRef.current);
                     }
-                }, 30);
+                }, textSpeed);
 
                 return () => {
                     clearInterval(timerRef.current);
@@ -1134,6 +1203,7 @@
                             onClose=${() => setIsMenuOpen(false)} 
                             onOpenSave=${() => { setSaveLoadMode('save'); setIsSaveLoadOpen(true); }}
                             onOpenLoad=${() => { setSaveLoadMode('load'); setIsSaveLoadOpen(true); }}
+                            onOpenSettings=${() => { setIsSettingsOpen(true); setIsMenuOpen(false); }}
                             onBackTitle=${() => {
                         setGameState({ sceneId: 'start', lineIndex: 0, bg: ASSETS.bg.qingjing, history: [] });
                         setIsMenuOpen(false);
@@ -1152,6 +1222,12 @@
                             onSave=${handleSaveSlot}
                             onLoad=${handleLoadSlot}
                             onDelete=${handleDeleteSlot}
+                        />`}
+
+                        ${isSettingsOpen && html`<${SettingsScreen}
+                            textSpeed=${textSpeed}
+                            onTextSpeedChange=${handleTextSpeedChange}
+                            onClose=${() => setIsSettingsOpen(false)}
                         />`}
                     </div>
                 </div>
