@@ -754,6 +754,17 @@
                 }
             }, []);
 
+            // 颜色映射（与对话框保持一致）
+            const getSpeakerColor = (name) => {
+                if (name === '沈清秋') return 'text-emerald-300';
+                if (name === '岳清源') return 'text-indigo-300';
+                if (name === '木清芳') return 'text-green-200';
+                if (name === '系统') return 'text-sky-300';
+                if (name === '旁白') return 'text-amber-200/80';
+                if (name === '琵琶女') return 'text-pink-300';
+                return 'text-slate-300';
+            };
+
             return html`
             <div class="absolute inset-0 z-[100] bg-black/90 backdrop-blur flex flex-col p-4 md:p-10 animate-in fade-in duration-300">
                 <div class="flex justify-between items-center mb-4 md:mb-6 border-b border-slate-700 pb-2 md:pb-4 shrink-0">
@@ -766,7 +777,7 @@
                     ${history.length === 0 ? html`<div class="text-slate-500 text-center mt-20 italic font-serif-sc">暂无记录</div>` : null}
                     ${history.map((item, index) => html`
                         <div class="flex flex-col gap-1 items-start group">
-                            <span class="text-xs md:text-sm font-bold ${item.speaker === '旁白' ? 'text-slate-500' : 'text-cyan-400'} px-2 py-0.5 rounded bg-slate-800/50 border border-slate-700/50">
+                            <span class="text-xs md:text-sm font-bold ${getSpeakerColor(item.speaker)} px-2 py-0.5 rounded bg-slate-800/50 border border-slate-700/50">
                                 ${item.speaker || '???'}
                             </span>
                             <p class="text-sm md:text-lg text-slate-300 font-serif-sc leading-relaxed bg-slate-900/30 p-2 md:p-3 rounded-lg w-full hover:bg-slate-800/50 transition-colors border-l-2 border-transparent hover:border-cyan-500/50">
