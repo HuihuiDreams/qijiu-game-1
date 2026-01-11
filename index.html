@@ -75,6 +75,55 @@
             filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.3));
         }
 
+        /* 屏幕震动动画 */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0) translateY(0);
+            }
+
+            10% {
+                transform: translateX(-8px) translateY(-2px) rotate(-0.5deg);
+            }
+
+            20% {
+                transform: translateX(8px) translateY(2px) rotate(0.5deg);
+            }
+
+            30% {
+                transform: translateX(-6px) translateY(-1px) rotate(-0.3deg);
+            }
+
+            40% {
+                transform: translateX(6px) translateY(1px) rotate(0.3deg);
+            }
+
+            50% {
+                transform: translateX(-4px) translateY(-1px) rotate(-0.2deg);
+            }
+
+            60% {
+                transform: translateX(4px) translateY(1px) rotate(0.2deg);
+            }
+
+            70% {
+                transform: translateX(-2px) translateY(0) rotate(-0.1deg);
+            }
+
+            80% {
+                transform: translateX(2px) translateY(0) rotate(0.1deg);
+            }
+
+            90% {
+                transform: translateX(-1px) translateY(0);
+            }
+        }
+
+        .screen-shake {
+            animation: shake 0.6s ease-in-out;
+        }
+
         /* 移动端优化：确保全屏 */
         #app-root {
             height: 100vh;
@@ -267,7 +316,7 @@
                     { speaker: '岳清源', text: "清秋师弟？我刚得了些极好的雨前龙井，想着你应该还没歇……", mood: 'gentle' },
                     { speaker: '沈清秋', text: "（浑身一僵，死死咬住嘴唇）（内心）岳清源。绝不能让他看见自己这副模样！绝不！滚……", mood: 'shame' },
                     { speaker: '岳清源', text: "（声音染上焦急）清秋师弟？你怎么了？我进来了！", mood: 'worried' },
-                    { speaker: '旁白', text: "【音效】砰！灵力破门。", mood: 'system', sound: ASSETS.audio.boom },
+                    { speaker: '旁白', text: "【音效】砰！灵力破门。", mood: 'system', sound: ASSETS.audio.boom, shake: true },
                     { speaker: '岳清源', text: "（几步冲到榻前）这味道……合欢宗的千机散？！小九！", mood: 'shocked' },
                     { speaker: '沈清秋', text: "（眼神涣散，痛苦地撕扯领口）别……别碰我……", mood: 'shame' },
                 ],
@@ -378,8 +427,8 @@
             'chapter6': {
                 lines: [
                     { speaker: '沈清秋', text: "（修雅剑铮然出鞘）既然知道，那就去死！！", mood: 'shame', bg: ASSETS.bg.ruin },
-                    { speaker: '旁白', text: "剑锋即将贯穿胸膛的刹那，岳清源腰间玄肃剑骤然发出一声凄厉悲鸣！", mood: 'narrative', sound: ASSETS.audio.sword },
-                    { speaker: '旁白', text: "那非护主剑气，而是灵魂深处的共鸣与哀嚎。沈清秋的神识被强行拽入一片混沌的记忆之海。", mood: 'narrative', sound: ASSETS.audio.magic },
+                    { speaker: '旁白', text: "剑锋即将贯穿胸膛的刹那，岳清源腰间玄肃剑骤然发出一声凄厉悲鸣！", mood: 'narrative', sound: ASSETS.audio.sword, shake: true },
+                    { speaker: '旁白', text: "那非护主剑气，而是灵魂深处的共鸣与哀嚎。沈清秋的神识被强行拽入一片混沌的记忆之海。", mood: 'narrative', sound: ASSETS.audio.magic, shake: true },
                     { speaker: '旁白', text: "【记忆闪回】全身经脉寸寸断裂，那是被恩师废去灵脉，从头重塑的酷刑。他趴在冰冷石地，手指抠出血痕，口中呢喃：“放我出去……我和小九约好了……我要去救他……”", mood: 'memory', bg: ASSETS.bg.lingxi },
                     { speaker: '旁白', text: "【记忆闪回】日复一日的煎熬。整整一年，每一息都在焚心似火中度过。", mood: 'memory' },
                     { speaker: '旁白', text: "【记忆闪回】“若无路可走，便以命开路。” 少年岳七以命入剑，口中溢血，却在笑：“小九……等我……七哥来了……”", mood: 'memory' },
@@ -423,6 +472,73 @@
             }
         };
 
+        // --- 结局元数据 (用于结局回收) ---
+        const ENDINGS_META = {
+            'endingHE': {
+                id: 'endingHE',
+                title: '归途',
+                subtitle: 'Happy End',
+                description: '破镜重圆，两人终于解开心结，携手共度余生。',
+                color: 'text-amber-400'
+            },
+            'endingBE1': {
+                id: 'endingBE1',
+                title: '阴阳两隔',
+                subtitle: 'Bad End 1',
+                description: '岳清源的犹豫，换来的是永恒的分离。',
+                color: 'text-red-400'
+            },
+            'endingBE2': {
+                id: 'endingBE2',
+                title: '陌路',
+                subtitle: 'Bad End 2',
+                description: '沈清秋选择离开，两人从此形同陌路。',
+                color: 'text-slate-400'
+            }
+        };
+        const TOTAL_ENDINGS = Object.keys(ENDINGS_META).length;
+
+        // --- 章节元数据 (用于章节选择) ---
+        const CHAPTERS_META = {
+            'chapter1': {
+                id: 'chapter1',
+                order: 1,
+                title: '第一章：假药风波',
+                description: '沈清秋求药不得，误服被掺假的丹药...'
+            },
+            'chapter2': {
+                id: 'chapter2',
+                order: 2,
+                title: '第二章：生死抉择',
+                description: '岳清源面临艰难的选择...'
+            },
+            'chapter3': {
+                id: 'chapter3',
+                order: 3,
+                title: '第三章：荒唐一夜',
+                description: '那一夜的疯狂与救赎...'
+            },
+            'chapter4': {
+                id: 'chapter4',
+                order: 4,
+                title: '第四章：暖红阁忆',
+                description: '沈清秋逃离苍穹山，独自疗伤...'
+            },
+            'chapter5': {
+                id: 'chapter5',
+                order: 5,
+                title: '第五章：废墟重逢',
+                description: '在曾经的秋府废墟，两人再次相见...'
+            },
+            'chapter6': {
+                id: 'chapter6',
+                order: 6,
+                title: '第六章：真相大白',
+                description: '玄肃剑的记忆揭示了一切...'
+            }
+        };
+        const TOTAL_CHAPTERS = Object.keys(CHAPTERS_META).length;
+
         // --- 组件 ---
 
         // 1. 图标库 (Lucide like)
@@ -444,6 +560,7 @@
             FastForward: (p) => html`<${Icon} ...${p} path=${html`<polygon points="13 19 22 12 13 5 13 19" /><polygon points="2 19 11 12 2 5 2 19" />`} />`,
             X: (p) => html`<${Icon} ...${p} path=${html`<line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />`} />`,
             Trash: (p) => html`<${Icon} ...${p} path=${html`<polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />`} />`,
+            ChevronLeft: (p) => html`<${Icon} ...${p} path=${html`<polyline points="15 18 9 12 15 6" />`} />`,
         };
 
         // 2. 加载页面
@@ -484,7 +601,7 @@
         };
 
         // 3. 对话框组件
-        const DialogueBox = ({ speaker, text, onNext, isTyping, typingText, isNarrative, onLog, onAuto, onSkip, isAuto, isSkip }) => {
+        const DialogueBox = ({ speaker, text, onNext, isTyping, typingText, isNarrative, onLog, onAuto, onSkip, isAuto, isSkip, onBack, canGoBack }) => {
             // 颜色映射
             const getColors = (name) => {
                 if (name === '沈清秋') return { text: 'text-emerald-300', border: 'border-emerald-600/50' };
@@ -515,6 +632,9 @@
                             
                             <!-- 按钮组 (整合进对话框右下角) -->
                             <div class="absolute bottom-1 right-1 md:bottom-2 md:right-2 flex gap-1 md:gap-2 z-50 opacity-100 md:opacity-0 md:group-hover/box:opacity-100 transition-opacity duration-300" onClick=${e => e.stopPropagation()}>
+                                 <button onClick=${onBack} class="p-1 md:p-1.5 ${canGoBack ? 'bg-slate-800/80 text-cyan-200/80 hover:bg-cyan-900/80 hover:text-cyan-100' : 'bg-slate-800/40 text-slate-600 cursor-not-allowed'} rounded transition-colors" title="上一句" disabled=${!canGoBack}>
+                                    <${Icons.ChevronLeft} size=${14} class="md:w-5 md:h-5" />
+                                </button>
                                  <button onClick=${onLog} class="p-1 md:p-1.5 bg-slate-800/80 hover:bg-cyan-900/80 rounded text-cyan-200/80 hover:text-cyan-100 transition-colors" title="回放">
                                     <${Icons.FileText} size=${14} class="md:w-5 md:h-5" />
                                 </button>
@@ -538,7 +658,7 @@
         };
 
         // 4. 开始画面
-        const StartScreen = ({ onStart, onLoad, hasAutoSave }) => html`
+        const StartScreen = ({ onStart, onLoad, hasAutoSave, onEndings, onChapters, unlockedEndingsCount, unlockedChaptersCount, totalChapters }) => html`
             <div class="absolute inset-0 z-40 bg-black flex flex-col items-center justify-center overflow-hidden">
                 <div class="absolute inset-0 animate-in zoom-in duration-[10s]">
                     <img src=${ASSETS.bg.start} class="w-full h-full object-cover opacity-60" />
@@ -563,6 +683,16 @@
                             `}
                             <button onClick=${() => onLoad('manual')} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/40 hover:bg-slate-700/60 border border-slate-500/30 text-slate-300 text-sm md:text-lg font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
                                 读取存档
+                            </button>
+                        </div>
+                        
+                        <!-- 新增：结局回收和章节选择 -->
+                        <div class="flex gap-2 w-full mt-1">
+                            <button onClick=${onChapters} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-indigo-900/40 hover:bg-indigo-800/60 border border-indigo-500/30 text-indigo-200/80 text-xs md:text-base font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
+                                章节选择 <span class="text-indigo-400">${unlockedChaptersCount}/${totalChapters}</span>
+                            </button>
+                            <button onClick=${onEndings} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-amber-900/40 hover:bg-amber-800/60 border border-amber-500/30 text-amber-200/80 text-xs md:text-base font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
+                                结局回收 <span class="text-amber-400">${unlockedEndingsCount}/${TOTAL_ENDINGS}</span>
                             </button>
                         </div>
                     </div>
@@ -744,6 +874,105 @@
             `;
         };
 
+        // 结局回收界面
+        const EndingsScreen = ({ unlockedEndings, onClose }) => {
+            const unlockedCount = unlockedEndings.size;
+
+            return html`
+                <div class="absolute inset-0 z-[60] bg-slate-950/95 backdrop-blur flex flex-col p-4 md:p-8 animate-in fade-in duration-300" onClick=${e => e.stopPropagation()}>
+                    <div class="flex justify-between items-center mb-6 shrink-0 border-b border-slate-800 pb-4">
+                        <h2 class="text-2xl md:text-4xl text-slate-100 font-serif-sc font-bold tracking-widest flex items-center gap-4">
+                            结局回收
+                            <span class="text-sm md:text-lg text-cyan-400 font-sans font-normal tracking-normal self-end mb-1 bg-slate-800 px-2 py-0.5 rounded">${unlockedCount} / ${TOTAL_ENDINGS}</span>
+                        </h2>
+                        <button onClick=${onClose} class="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
+                            <${Icons.X} size=${28} />
+                        </button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto custom-scroll pr-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-10">
+                            ${Object.values(ENDINGS_META).map(ending => {
+                const isUnlocked = unlockedEndings.has(ending.id);
+                return html`
+                                    <div class="group relative bg-slate-900 border-2 ${isUnlocked ? 'border-slate-700 hover:border-cyan-500' : 'border-slate-800'} rounded-lg p-4 md:p-6 transition-all ${isUnlocked ? 'hover:shadow-[0_0_20px_rgba(0,0,0,0.5)] transform hover:-translate-y-1' : 'opacity-50'}">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-xs md:text-sm ${isUnlocked ? ending.color : 'text-slate-600'} font-bold uppercase tracking-wider">${isUnlocked ? ending.subtitle : '???'}</span>
+                                            ${isUnlocked ? html`
+                                                <span class="text-xs text-green-400 bg-green-900/30 px-2 py-0.5 rounded-full">已解锁</span>
+                                            ` : html`
+                                                <span class="text-xs text-slate-600 bg-slate-800 px-2 py-0.5 rounded-full">未解锁</span>
+                                            `}
+                                        </div>
+                                        <h3 class="text-lg md:text-2xl font-serif-sc font-bold ${isUnlocked ? 'text-slate-100' : 'text-slate-600'} mb-2">
+                                            ${isUnlocked ? ending.title : '???'}
+                                        </h3>
+                                        <p class="text-sm md:text-base ${isUnlocked ? 'text-slate-400' : 'text-slate-700'} font-serif-sc leading-relaxed">
+                                            ${isUnlocked ? ending.description : '达成此结局后解锁'}
+                                        </p>
+                                    </div>
+                                `;
+            })}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // 章节选择界面
+        const ChaptersScreen = ({ unlockedChapters, onClose, onSelectChapter }) => {
+            const unlockedCount = unlockedChapters.size;
+            const sortedChapters = Object.values(CHAPTERS_META).sort((a, b) => a.order - b.order);
+
+            return html`
+                <div class="absolute inset-0 z-[60] bg-slate-950/95 backdrop-blur flex flex-col p-4 md:p-8 animate-in fade-in duration-300" onClick=${e => e.stopPropagation()}>
+                    <div class="flex justify-between items-center mb-6 shrink-0 border-b border-slate-800 pb-4">
+                        <h2 class="text-2xl md:text-4xl text-slate-100 font-serif-sc font-bold tracking-widest flex items-center gap-4">
+                            章节选择
+                            <span class="text-sm md:text-lg text-indigo-400 font-sans font-normal tracking-normal self-end mb-1 bg-slate-800 px-2 py-0.5 rounded">${unlockedCount} / ${TOTAL_CHAPTERS}</span>
+                        </h2>
+                        <button onClick=${onClose} class="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
+                            <${Icons.X} size=${28} />
+                        </button>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto custom-scroll pr-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pb-10">
+                            ${sortedChapters.map(chapter => {
+                const isUnlocked = unlockedChapters.has(chapter.id);
+                return html`
+                                    <div class="group relative bg-slate-900 border-2 ${isUnlocked ? 'border-slate-700 hover:border-indigo-500 cursor-pointer' : 'border-slate-800 cursor-not-allowed'} rounded-lg p-4 md:p-6 transition-all ${isUnlocked ? 'hover:shadow-[0_0_20px_rgba(0,0,0,0.5)] transform hover:-translate-y-1' : 'opacity-50'}"
+                                         onClick=${() => isUnlocked && onSelectChapter(chapter.id)}>
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-xs md:text-sm text-indigo-400 font-bold uppercase tracking-wider">Chapter ${chapter.order}</span>
+                                            ${isUnlocked ? html`
+                                                <span class="text-xs text-green-400 bg-green-900/30 px-2 py-0.5 rounded-full">已解锁</span>
+                                            ` : html`
+                                                <span class="text-xs text-slate-600 bg-slate-800 px-2 py-0.5 rounded-full">未解锁</span>
+                                            `}
+                                        </div>
+                                        <h3 class="text-lg md:text-2xl font-serif-sc font-bold ${isUnlocked ? 'text-slate-100 group-hover:text-indigo-200' : 'text-slate-600'} mb-2 transition-colors">
+                                            ${isUnlocked ? chapter.title : '???'}
+                                        </h3>
+                                        <p class="text-sm md:text-base ${isUnlocked ? 'text-slate-400' : 'text-slate-700'} font-serif-sc leading-relaxed">
+                                            ${isUnlocked ? chapter.description : '阅读此章节后解锁'}
+                                        </p>
+                                        ${isUnlocked && html`
+                                            <div class="absolute bottom-4 right-4 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="9 18 15 12 9 6" />
+                                                </svg>
+                                            </div>
+                                        `}
+                                    </div>
+                                `;
+            })}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
         // 7. 历史记录模态框
         const HistoryModal = ({ history, onClose }) => {
             const endRef = useRef(null);
@@ -833,6 +1062,8 @@
             const [isAuto, setIsAuto] = useState(false);
             const [isSkip, setIsSkip] = useState(false);
             const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+            const [isShaking, setIsShaking] = useState(false); // 屏幕震动状态
+            const [isEndingsOpen, setIsEndingsOpen] = useState(false); // 结局回收界面
 
             // 已读文本记录 (使用 Set 存储已读的唯一标识)
             const [readTextIds, setReadTextIds] = useState(() => {
@@ -843,6 +1074,30 @@
                     return new Set();
                 }
             });
+
+            // 已解锁结局记录
+            const UNLOCKED_ENDINGS_KEY = 'qijiu_unlocked_endings';
+            const [unlockedEndings, setUnlockedEndings] = useState(() => {
+                try {
+                    const saved = localStorage.getItem(UNLOCKED_ENDINGS_KEY);
+                    return saved ? new Set(JSON.parse(saved)) : new Set();
+                } catch {
+                    return new Set();
+                }
+            });
+
+            // 已解锁章节记录
+            const UNLOCKED_CHAPTERS_KEY = 'qijiu_unlocked_chapters';
+            const [unlockedChapters, setUnlockedChapters] = useState(() => {
+                try {
+                    const saved = localStorage.getItem(UNLOCKED_CHAPTERS_KEY);
+                    // 默认解锁第一章
+                    return saved ? new Set(JSON.parse(saved)) : new Set(['chapter1']);
+                } catch {
+                    return new Set(['chapter1']);
+                }
+            });
+            const [isChaptersOpen, setIsChaptersOpen] = useState(false); // 章节选择界面
 
             // Settings
             const SETTINGS_KEY = 'qijiu_settings';
@@ -866,6 +1121,9 @@
             const AUTO_SAVE_KEY = 'qijiu_auto_save';
             const SAVE_SLOT_PREFIX = 'qijiu_save_slot_';
             const READ_TEXT_KEY = 'qijiu_read_text'; // 已读文本记录
+
+            // 状态历史栈 (用于回退功能)
+            const [stateHistory, setStateHistory] = useState([]);
 
             // 播放 BGM
             useEffect(() => {
@@ -911,6 +1169,18 @@
             useEffect(() => {
                 if (!currentLine) return;
 
+                // 自动解锁当前章节
+                if (CHAPTERS_META[gameState.sceneId] && !unlockedChapters.has(gameState.sceneId)) {
+                    const newUnlocked = new Set(unlockedChapters);
+                    newUnlocked.add(gameState.sceneId);
+                    setUnlockedChapters(newUnlocked);
+                    try {
+                        localStorage.setItem(UNLOCKED_CHAPTERS_KEY, JSON.stringify([...newUnlocked]));
+                    } catch (e) {
+                        console.error('保存章节解锁记录失败:', e);
+                    }
+                }
+
                 // 生成当前行的唯一标识
                 const textId = `${gameState.sceneId}_${gameState.lineIndex}`;
 
@@ -934,6 +1204,12 @@
                     const sfx = new Audio(currentLine.sound);
                     sfx.volume = 0.6;
                     sfx.play().catch(() => { });
+                }
+
+                // 屏幕震动
+                if (currentLine.shake && !isSkip) {
+                    setIsShaking(true);
+                    setTimeout(() => setIsShaking(false), 600);
                 }
 
                 const text = currentLine.text;
@@ -1108,6 +1384,9 @@
                     // 记录历史
                     const newHistoryItem = { speaker: currentLine.speaker, text: currentLine.text };
 
+                    // 保存当前状态到历史栈 (用于回退)
+                    setStateHistory(prev => [...prev.slice(-50), { ...gameState }]); // 最多保存50条
+
                     if (gameState.lineIndex < currentScene.lines.length - 1) {
                         setGameState(prev => ({
                             ...prev,
@@ -1135,6 +1414,20 @@
                 }
             };
 
+            // 回退到上一句
+            const handleBack = () => {
+                if (stateHistory.length === 0) return;
+
+                // 停止自动/快进模式
+                setIsAuto(false);
+                setIsSkip(false);
+
+                // 取出上一个状态
+                const prevState = stateHistory[stateHistory.length - 1];
+                setStateHistory(prev => prev.slice(0, -1));
+                setGameState(prevState);
+            };
+
             const handleChoice = (option) => {
                 // 选项被点击时，停止 Auto/Skip
                 setIsAuto(false);
@@ -1153,6 +1446,7 @@
                     return html`<${StartScreen} 
                         onStart=${() => {
                             setGameState({ sceneId: 'chapter1', lineIndex: 0, bg: ASSETS.bg.qiancao, history: [] });
+                            setStateHistory([]); // 清空回退历史
                         }} 
                         onLoad=${(type) => {
                             if (type === 'manual') {
@@ -1163,6 +1457,11 @@
                             }
                         }}
                         hasAutoSave=${!!localStorage.getItem(AUTO_SAVE_KEY)}
+                        onEndings=${() => setIsEndingsOpen(true)}
+                        onChapters=${() => setIsChaptersOpen(true)}
+                        unlockedEndingsCount=${unlockedEndings.size}
+                        unlockedChaptersCount=${unlockedChapters.size}
+                        totalChapters=${TOTAL_CHAPTERS}
                     />`;
                 }
 
@@ -1174,6 +1473,18 @@
                 }
 
                 if (currentScene?.type === 'ending') {
+                    // 解锁当前结局
+                    if (!unlockedEndings.has(gameState.sceneId)) {
+                        const newUnlocked = new Set(unlockedEndings);
+                        newUnlocked.add(gameState.sceneId);
+                        setUnlockedEndings(newUnlocked);
+                        try {
+                            localStorage.setItem(UNLOCKED_ENDINGS_KEY, JSON.stringify([...newUnlocked]));
+                        } catch (e) {
+                            console.error('保存结局解锁记录失败:', e);
+                        }
+                    }
+
                     // 结局时，重置所有状态
                     return html`
                         <div class="absolute inset-0 flex items-center justify-center bg-black/80 z-40 p-2 md:p-8 text-center animate-in fade-in duration-1000">
@@ -1184,6 +1495,7 @@
                             setGameState({ sceneId: 'start', lineIndex: 0, bg: ASSETS.bg.qingjing, history: [] });
                             setIsAuto(false);
                             setIsSkip(false);
+                            setStateHistory([]); // 清空回退历史
                         }} class="ending-btn-mobile-landscape px-6 py-2 md:px-10 md:py-3 bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 border border-slate-500 text-slate-100 rounded text-base md:text-xl font-serif-sc tracking-widest shadow-lg transition-transform hover:scale-105 shrink-0">
                                     返回标题
                                 </button>
@@ -1229,6 +1541,8 @@
                         setIsSkip(!isSkip);
                         setIsAuto(false);
                     }}
+                            onBack=${handleBack}
+                            canGoBack=${stateHistory.length > 0}
                             isAuto=${isAuto}
                             isSkip=${isSkip}
                         />
@@ -1246,7 +1560,7 @@
                 <div class="w-full h-full bg-black flex items-center justify-center overflow-hidden relative">
                     ${isLoading ? html`<${Preloader} onLoadComplete=${() => setIsLoading(false)} />` : null}
                     
-                    <div class="relative shadow-2xl bg-slate-900 overflow-hidden m-auto group/game flex-shrink-0" 
+                    <div class="${`relative shadow-2xl bg-slate-900 overflow-hidden m-auto group/game flex-shrink-0 ${isShaking ? 'screen-shake' : ''}`}" 
                          style="width: min(100%, 177.78dvh); aspect-ratio: 16/9;">
                         
                         <div class="absolute inset-0 z-0 transition-opacity duration-1000">
@@ -1288,6 +1602,29 @@
                             textSpeed=${textSpeed}
                             onTextSpeedChange=${handleTextSpeedChange}
                             onClose=${() => setIsSettingsOpen(false)}
+                        />`}
+
+                        ${isEndingsOpen && html`<${EndingsScreen}
+                            unlockedEndings=${unlockedEndings}
+                            onClose=${() => setIsEndingsOpen(false)}
+                        />`}
+
+                        ${isChaptersOpen && html`<${ChaptersScreen}
+                            unlockedChapters=${unlockedChapters}
+                            onClose=${() => setIsChaptersOpen(false)}
+                            onSelectChapter=${(chapterId) => {
+                        const chapter = SCENES[chapterId];
+                        if (chapter) {
+                            setGameState({
+                                sceneId: chapterId,
+                                lineIndex: 0,
+                                bg: chapter.lines?.[0]?.bg || ASSETS.bg.qiancao,
+                                history: []
+                            });
+                            setStateHistory([]);
+                            setIsChaptersOpen(false);
+                        }
+                    }}
                         />`}
                     </div>
                 </div>
