@@ -875,7 +875,7 @@
         };
 
         // 结局回收界面
-        const EndingsScreen = ({ unlockedEndings, onClose }) => {
+        const EndingsScreen = ({ unlockedEndings, onClose, onSelectEnding }) => {
             const unlockedCount = unlockedEndings.size;
 
             return html`
@@ -895,21 +895,29 @@
                             ${Object.values(ENDINGS_META).map(ending => {
                 const isUnlocked = unlockedEndings.has(ending.id);
                 return html`
-                                    <div class="group relative bg-slate-900 border-2 ${isUnlocked ? 'border-slate-700 hover:border-cyan-500' : 'border-slate-800'} rounded-lg p-4 md:p-6 transition-all ${isUnlocked ? 'hover:shadow-[0_0_20px_rgba(0,0,0,0.5)] transform hover:-translate-y-1' : 'opacity-50'}">
+                                    <div class="group relative bg-slate-900 border-2 ${isUnlocked ? 'border-slate-700 hover:border-amber-500 cursor-pointer' : 'border-slate-800 cursor-not-allowed'} rounded-lg p-4 md:p-6 transition-all ${isUnlocked ? 'hover:shadow-[0_0_20px_rgba(0,0,0,0.5)] transform hover:-translate-y-1' : 'opacity-50'}"
+                                         onClick=${() => isUnlocked && onSelectEnding(ending.id)}>
                                         <div class="flex items-center justify-between mb-2">
                                             <span class="text-xs md:text-sm ${isUnlocked ? ending.color : 'text-slate-600'} font-bold uppercase tracking-wider">${isUnlocked ? ending.subtitle : '???'}</span>
                                             ${isUnlocked ? html`
-                                                <span class="text-xs text-green-400 bg-green-900/30 px-2 py-0.5 rounded-full">已解锁</span>
+                                                <span class="text-xs text-green-400 bg-green-900/30 px-2 py-0.5 rounded-full">点击查看</span>
                                             ` : html`
                                                 <span class="text-xs text-slate-600 bg-slate-800 px-2 py-0.5 rounded-full">未解锁</span>
                                             `}
                                         </div>
-                                        <h3 class="text-lg md:text-2xl font-serif-sc font-bold ${isUnlocked ? 'text-slate-100' : 'text-slate-600'} mb-2">
+                                        <h3 class="text-lg md:text-2xl font-serif-sc font-bold ${isUnlocked ? 'text-slate-100 group-hover:text-amber-200' : 'text-slate-600'} mb-2 transition-colors">
                                             ${isUnlocked ? ending.title : '???'}
                                         </h3>
                                         <p class="text-sm md:text-base ${isUnlocked ? 'text-slate-400' : 'text-slate-700'} font-serif-sc leading-relaxed">
                                             ${isUnlocked ? ending.description : '达成此结局后解锁'}
                                         </p>
+                                        ${isUnlocked && html`
+                                            <div class="absolute bottom-4 right-4 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="9 18 15 12 9 6" />
+                                                </svg>
+                                            </div>
+                                        `}
                                     </div>
                                 `;
             })}
@@ -1607,6 +1615,19 @@
                         ${isEndingsOpen && html`<${EndingsScreen}
                             unlockedEndings=${unlockedEndings}
                             onClose=${() => setIsEndingsOpen(false)}
+                            onSelectEnding=${(endingId) => {
+                        const ending = SCENES[endingId];
+                        if (ending) {
+                            setGameState({
+                                sceneId: endingId,
+                                lineIndex: 0,
+                                bg: ending.bg || ASSETS.bg.qingjing,
+                                history: []
+                            });
+                            setStateHistory([]);
+                            setIsEndingsOpen(false);
+                        }
+                    }}
                         />`}
 
                         ${isChaptersOpen && html`<${ChaptersScreen}
