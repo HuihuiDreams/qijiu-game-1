@@ -124,6 +124,23 @@
             animation: shake 0.6s ease-in-out;
         }
 
+        /* 有节奏的持续震动动画 */
+        @keyframes rhythm-shake {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(3px);
+            }
+        }
+
+        .screen-rhythm {
+            animation: rhythm-shake 0.3s ease-in-out infinite;
+        }
+
         /* 移动端优化：确保全屏 */
         #app-root {
             height: 100vh;
@@ -348,8 +365,8 @@
                     { speaker: '沈清秋', text: "（难受地蹭着，眼泪大颗滚落）……七哥……救我……七哥……好难受……", mood: 'shame' },
                     { speaker: '旁白', text: "他低下头，近乎凶狠地吻住那张喊疼的嘴，动作不再是单纯救治，而是混杂绝望的掠夺。", mood: 'narrative' },
                     { speaker: '岳清源', text: "（眼底墨色翻涌）小九……七哥救你……七哥这就给你……", mood: 'dark' },
-                    { speaker: '旁白', text: "衣衫尽裂，满室荒唐。这是一场名为救赎的凌迟。沈清秋在药力驱使下展现出从未见过的媚态，岳清源则在沈清秋一声声变调的“七哥”中，彻底疯魔。", mood: 'narrative', sound: ASSETS.audio.cloth },
-                    { speaker: '旁白', text: "他要不够。想和他融为一体，想让他永远只能这样哭着喊自己名字，想把错过的时光，都在这一夜狠狠补回来。", mood: 'narrative' },
+                    { speaker: '旁白', text: "衣衫尽裂，满室荒唐。这是一场名为救赎的凌迟。沈清秋在药力驱使下展现出从未见过的媚态，岳清源则在沈清秋一声声变调的“七哥”中，彻底疯魔。", mood: 'narrative', sound: ASSETS.audio.cloth, rhythm: true },
+                    { speaker: '旁白', text: "他要不够。想和他融为一体，想让他永远只能这样哭着喊自己名字，想把错过的时光，都在这一夜狠狠补回来。", mood: 'narrative', rhythm: true },
                     { speaker: '旁白', text: "翌日清晨。寝殿一片狼藉。沈清秋在一阵酸痛中醒来，感觉像被拆散架子又重新拼凑，尤其那难以启齿之处，传来火辣辣的异样。", mood: 'narrative' },
                     { speaker: '旁白', text: "记忆如潮水回笼。昨晚的燥热、绝望、求救……以及后来那场疯狂缠绵。他记得岳清源的汗水滴在胸口，记得对方在耳边低吼“小九”，更记得……自己如何像个不知廉耻的荡妇，主动哭求、纠缠。", mood: 'narrative' },
                     { speaker: '沈清秋', text: "（看着身侧熟睡的岳清源，脸色惨白）（内心）太可笑了。太下贱了。", mood: 'despair' },
@@ -1071,6 +1088,7 @@
             const [isSkip, setIsSkip] = useState(false);
             const [isSettingsOpen, setIsSettingsOpen] = useState(false);
             const [isShaking, setIsShaking] = useState(false); // 屏幕震动状态
+            const [isRhythm, setIsRhythm] = useState(false); // 有节奏的震动状态
             const [isEndingsOpen, setIsEndingsOpen] = useState(false); // 结局回收界面
 
             // 已读文本记录 (使用 Set 存储已读的唯一标识)
@@ -1218,6 +1236,13 @@
                 if (currentLine.shake && !isSkip) {
                     setIsShaking(true);
                     setTimeout(() => setIsShaking(false), 600);
+                }
+
+                // 有节奏的震动（持续整行文字）
+                if (currentLine.rhythm && !isSkip) {
+                    setIsRhythm(true);
+                } else {
+                    setIsRhythm(false);
                 }
 
                 const text = currentLine.text;
@@ -1568,7 +1593,7 @@
                 <div class="w-full h-full bg-black flex items-center justify-center overflow-hidden relative">
                     ${isLoading ? html`<${Preloader} onLoadComplete=${() => setIsLoading(false)} />` : null}
                     
-                    <div class="${`relative shadow-2xl bg-slate-900 overflow-hidden m-auto group/game flex-shrink-0 ${isShaking ? 'screen-shake' : ''}`}" 
+                    <div class="${`relative shadow-2xl bg-slate-900 overflow-hidden m-auto group/game flex-shrink-0 ${isShaking ? 'screen-shake' : ''} ${isRhythm ? 'screen-rhythm' : ''}`}" 
                          style="width: min(100%, 177.78dvh); aspect-ratio: 16/9;">
                         
                         <div class="absolute inset-0 z-0 transition-opacity duration-1000">
