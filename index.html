@@ -1318,7 +1318,7 @@
                     clearInterval(timerRef.current);
                     if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
                 };
-            }, [gameState.lineIndex, gameState.sceneId, audioEnabled, isSkip, readTextIds]);
+            }, [gameState.lineIndex, gameState.sceneId, isSkip]); // 移除 readTextIds 和 audioEnabled 以防止打字中途重置
 
             // Auto Mode 监听
             useEffect(() => {
