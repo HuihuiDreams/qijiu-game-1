@@ -834,6 +834,16 @@
             const [isSkip, setIsSkip] = useState(false);
             const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+            // 已读文本记录 (使用 Set 存储已读的唯一标识)
+            const [readTextIds, setReadTextIds] = useState(() => {
+                try {
+                    const saved = localStorage.getItem(READ_TEXT_KEY);
+                    return saved ? new Set(JSON.parse(saved)) : new Set();
+                } catch {
+                    return new Set();
+                }
+            });
+
             // Settings
             const SETTINGS_KEY = 'qijiu_settings';
             const loadSettings = () => {
@@ -855,6 +865,7 @@
 
             const AUTO_SAVE_KEY = 'qijiu_auto_save';
             const SAVE_SLOT_PREFIX = 'qijiu_save_slot_';
+            const READ_TEXT_KEY = 'qijiu_read_text'; // 已读文本记录
 
             // 播放 BGM
             useEffect(() => {
@@ -900,6 +911,19 @@
             useEffect(() => {
                 if (!currentLine) return;
 
+                // 生成当前行的唯一标识
+                const textId = `${gameState.sceneId}_${gameState.lineIndex}`;
+
+                // 检查当前文本是否已读
+                const isCurrentTextRead = readTextIds.has(textId);
+
+                // 如果是Skip模式但遇到未读文本，自动停止Skip
+                if (isSkip && !isCurrentTextRead) {
+                    setIsSkip(false);
+                    // 可选：显示提示
+                    // console.log('遇到未读文本，停止快进');
+                }
+
                 // 背景切换
                 if (currentLine.bg) {
                     setGameState(prev => ({ ...prev, bg: currentLine.bg }));
@@ -914,8 +938,8 @@
 
                 const text = currentLine.text;
 
-                // 如果是Skip模式，直接显示全部
-                if (isSkip) {
+                // 如果是Skip模式且文本已读，直接显示全部
+                if (isSkip && isCurrentTextRead) {
                     setTypingText(text);
                     setIsTyping(false);
 
@@ -948,7 +972,7 @@
                     clearInterval(timerRef.current);
                     if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
                 };
-            }, [gameState.lineIndex, gameState.sceneId, audioEnabled, isSkip]);
+            }, [gameState.lineIndex, gameState.sceneId, audioEnabled, isSkip, readTextIds]);
 
             // Auto Mode 监听
             useEffect(() => {
@@ -1051,6 +1075,20 @@
 
             // --- Navigation Logic ---
             const handleNext = (isAutoTrigger = false) => {
+                // 标记当前文本为已读
+                const textId = `${gameState.sceneId}_${gameState.lineIndex}`;
+                if (!readTextIds.has(textId)) {
+                    const newReadTextIds = new Set(readTextIds);
+                    newReadTextIds.add(textId);
+                    setReadTextIds(newReadTextIds);
+                    // 保存到 localStorage
+                    try {
+                        localStorage.setItem(READ_TEXT_KEY, JSON.stringify([...newReadTextIds]));
+                    } catch (e) {
+                        console.error('保存已读记录失败:', e);
+                    }
+                }
+
                 // 如果是用户手动点击
                 if (!isAutoTrigger) {
                     // 如果正在Skip，停止Skip
@@ -1179,7 +1217,18 @@
                             isNarrative=${isNarrative}
                             onLog=${() => setIsHistoryOpen(true)}
                             onAuto=${() => { setIsAuto(!isAuto); setIsSkip(false); }}
-                            onSkip=${() => { setIsSkip(!isSkip); setIsAuto(false); }}
+                            onSkip=${() => {
+                        // 检查当前文本是否已读
+                        const textId = `${gameState.sceneId}_${gameState.lineIndex}`;
+                        const canSkip = readTextIds.has(textId);
+                        if (!isSkip && !canSkip) {
+                            // 如果当前文本未读，不允许开启快进
+                            alert('只能快进已读过的剧情哦！');
+                            return;
+                        }
+                        setIsSkip(!isSkip);
+                        setIsAuto(false);
+                    }}
                             isAuto=${isAuto}
                             isSkip=${isSkip}
                         />
