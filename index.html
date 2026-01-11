@@ -1065,6 +1065,43 @@
             </div>
         `;
 
+        // 背景切换组件 (Cross-fade)
+        const BackgroundLayer = ({ src }) => {
+            const [currentSrc, setCurrentSrc] = useState(src);
+            const [nextSrc, setNextSrc] = useState(null);
+            const [isTransitioning, setIsTransitioning] = useState(false);
+
+            useEffect(() => {
+                if (src !== currentSrc) {
+                    setNextSrc(src);
+
+                    // 下一帧启动动画
+                    requestAnimationFrame(() => {
+                        setIsTransitioning(true);
+                    });
+
+                    // 动画结束后更新状态
+                    const timer = setTimeout(() => {
+                        setCurrentSrc(src);
+                        setNextSrc(null);
+                        setIsTransitioning(false);
+                    }, 1000); // 1秒淡入淡出，与 CSS duration 匹配
+
+                    return () => clearTimeout(timer);
+                }
+            }, [src, currentSrc]);
+
+            return html`
+                <div class="absolute inset-0 z-0 bg-black pointer-events-none select-none">
+                    <!-- 底层：当前显示的背景 -->
+                    ${currentSrc && html`<img src=${currentSrc} class="absolute inset-0 w-full h-full object-cover filter brightness-[0.6]" />`}
+                    
+                    <!-- 顶层：淡入的新背景 -->
+                    ${nextSrc && html`<img src=${nextSrc} class="absolute inset-0 w-full h-full object-cover filter brightness-[0.6] transition-opacity duration-1000 ease-in-out ${isTransitioning ? 'opacity-100' : 'opacity-0'}" />`}
+                </div>
+            `;
+        };
+
         // --- 主逻辑 ---
         const App = () => {
             const [isLoading, setIsLoading] = useState(true);
@@ -1596,9 +1633,7 @@
                     <div class="${`relative shadow-2xl bg-slate-900 overflow-hidden m-auto group/game flex-shrink-0 ${isShaking ? 'screen-shake' : ''} ${isRhythm ? 'screen-rhythm' : ''}`}" 
                          style="width: min(100%, 177.78dvh); aspect-ratio: 16/9;">
                         
-                        <div class="absolute inset-0 z-0 transition-opacity duration-1000">
-                            ${gameState.bg && html`<img src=${gameState.bg} class="w-full h-full object-cover filter brightness-[0.6]" />`}
-                        </div>
+                        <${BackgroundLayer} src=${gameState.bg} />
 
                         ${renderContent()}
 
