@@ -287,7 +287,7 @@
         // --- 资源配置 (保持原资源) ---
         const ASSETS = {
             bg: {
-                qingjing: './bk.JPG',
+                // qingjing: './bk.JPG',
                 qiancao: './qiancao.jpg',
                 bamboo: './bamboonight.jpg',
                 coldspring: './coldspring.jpg',
@@ -1108,7 +1108,7 @@
             const [gameState, setGameState] = useState({
                 sceneId: 'start',
                 lineIndex: 0,
-                bg: ASSETS.bg.qingjing,
+                bg: ASSETS.bg.bamboo,
                 history: [] // 历史记录
             });
             const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -1647,7 +1647,7 @@
                             onOpenLoad=${() => { setSaveLoadMode('load'); setIsSaveLoadOpen(true); }}
                             onOpenSettings=${() => { setIsSettingsOpen(true); setIsMenuOpen(false); }}
                             onBackTitle=${() => {
-                        setGameState({ sceneId: 'start', lineIndex: 0, bg: ASSETS.bg.qingjing, history: [] });
+                        setGameState({ sceneId: 'start', lineIndex: 0, bg: ASSETS.bg.bamboo, history: [] });
                         setIsMenuOpen(false);
                     }}
                         />`}
@@ -1681,7 +1681,7 @@
                             setGameState({
                                 sceneId: endingId,
                                 lineIndex: 0,
-                                bg: ending.bg || ASSETS.bg.qingjing,
+                                bg: ending.bg || ASSETS.bg.bamboo,
                                 history: []
                             });
                             setStateHistory([]);
