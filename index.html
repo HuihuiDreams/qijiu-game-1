@@ -138,7 +138,7 @@
         }
 
         .screen-rhythm {
-            animation: rhythm-shake 0.3s ease-in-out infinite;
+            animation: rhythm-shake 0.5s ease-in-out infinite;
         }
 
         /* 移动端优化：确保全屏 */
@@ -623,7 +623,7 @@
             const getColors = (name) => {
                 if (name === '沈清秋') return { text: 'text-emerald-300', border: 'border-emerald-600/50' };
                 if (name === '岳清源') return { text: 'text-indigo-300', border: 'border-indigo-600/50' };
-                if (name === '木清芳') return { text: 'text-green-200', border: 'border-green-600/50' };
+                if (name === '木清芳') return { text: 'text-amber-600', border: 'border-amber-700/50' };
                 if (name === '系统') return { text: 'text-sky-300', border: 'border-sky-600/50' };
                 if (name === '旁白') return { text: 'text-amber-200/80', border: 'border-amber-600/30' };
                 return { text: 'text-slate-300', border: 'border-cyan-600/50' };
@@ -688,27 +688,27 @@
                     </h1>
                     
                     <div class="flex flex-col gap-2 mt-2 mobile-landscape-gap md:mt-4 lg:mt-8 w-full max-w-xs scale-90 md:scale-100">
-                        <button onClick=${() => onStart()} class="px-4 py-1.5 mobile-landscape-btn md:px-8 md:py-3 bg-cyan-900/40 hover:bg-cyan-800/60 border border-cyan-500/30 text-cyan-100 text-lg md:text-2xl font-calligraphy rounded transition-all tracking-[0.2em] backdrop-blur-sm">
+                        <button onClick=${() => onStart()} class="px-4 py-1.5 mobile-landscape-btn md:px-8 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-lg md:text-2xl font-calligraphy rounded transition-all tracking-[0.2em] backdrop-blur-sm">
                             开始新游戏
                         </button>
                         
                         <div class="flex gap-2 w-full">
                             ${hasAutoSave && html`
-                            <button onClick=${() => onLoad('auto')} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/40 hover:bg-slate-700/60 border border-slate-500/30 text-amber-200/80 text-sm md:text-lg font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
+                            <button onClick=${() => onLoad('auto')} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-sm md:text-lg font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
                                 继续游戏
                             </button>
                             `}
-                            <button onClick=${() => onLoad('manual')} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/40 hover:bg-slate-700/60 border border-slate-500/30 text-slate-300 text-sm md:text-lg font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
+                            <button onClick=${() => onLoad('manual')} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-sm md:text-lg font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
                                 读取存档
                             </button>
                         </div>
                         
                         <!-- 新增：结局回收和章节选择 -->
                         <div class="flex gap-2 w-full mt-1">
-                            <button onClick=${onChapters} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-indigo-900/40 hover:bg-indigo-800/60 border border-indigo-500/30 text-indigo-200/80 text-xs md:text-base font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
-                                章节选择 <span class="text-indigo-400">${unlockedChaptersCount}/${totalChapters}</span>
+                            <button onClick=${onChapters} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-xs md:text-base font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
+                                章节选择 <span class="text-cyan-400">${unlockedChaptersCount}/${totalChapters}</span>
                             </button>
-                            <button onClick=${onEndings} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-amber-900/40 hover:bg-amber-800/60 border border-amber-500/30 text-amber-200/80 text-xs md:text-base font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
+                            <button onClick=${onEndings} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-xs md:text-base font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
                                 结局回收 <span class="text-amber-400">${unlockedEndingsCount}/${TOTAL_ENDINGS}</span>
                             </button>
                         </div>
