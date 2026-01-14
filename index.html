@@ -299,7 +299,13 @@
                 endingB: './Image (1).png'
             },
             char: {
-                sqq: './shenqingqiu.png',
+                sqq: {
+                    v1: './sqq_1.png',        // 1. 正常 (用于 angry, disdain, default)
+                    v2: './sqq_2.png',        // 2. 闭眼 (用于 despair)
+                    v3: './sqq_3.png',        // 3. 闭眼脸红 (用于 pain - 药性痛苦)
+                    v4: './sqq_4.png',        // 4. 目光躲闪 (用于 shocked, soft - 震惊/心虚/傲娇)
+                    v5: './sqq_5.png'         // 5. 目光躲闪+脸红 (用于 shame - 羞耻/情动)
+                },
                 yqy: './yueqingyuan.png'
             },
             audio: {
@@ -1583,10 +1589,28 @@
                 return html`
                     <div class="absolute inset-0 z-10 flex items-end justify-center pointer-events-none">
                         <div class="w-1/2 h-full max-w-[500px] relative transition-all duration-500 ease-out ${isYQY ? 'translate-y-0 opacity-100 scale-105 z-20' : 'translate-y-4 opacity-0 scale-95 z-10'}">
-                            <img src=${ASSETS.char.yqy} class="char-sprite absolute bottom-0 left-1/2 md:left-[40%] -translate-x-1/2 h-[85%] object-contain" />
+                            <img src=${ASSETS.char.yqy} class="char-sprite absolute bottom-0 left-1/2 md:left-[40%] -translate-x-1/2 h-[85%] object-contain object-bottom" />
                         </div>
                         <div class="w-1/2 h-full max-w-[500px] relative transition-all duration-500 ease-out ${isSQQ ? 'translate-y-0 opacity-100 scale-105 z-20' : 'translate-y-4 opacity-0 scale-95 z-10'}">
-                            <img src=${ASSETS.char.sqq} class="char-sprite absolute bottom-0 left-1/2 md:left-[60%] -translate-x-1/2 h-[85%] object-contain" />
+                            ${(() => {
+                        // 沈清秋立绘映射逻辑 (5张图版本)
+                        const mood = currentLine?.mood || 'neutral';
+                        let spriteSrc = ASSETS.char.sqq.v1; // 默认：正常
+
+                        if (['angry', 'disdain', 'determined', 'neutral'].includes(mood)) {
+                            spriteSrc = ASSETS.char.sqq.v1; // 1. 正常
+                        } else if (['despair', 'sorrow', 'sleep'].includes(mood)) {
+                            spriteSrc = ASSETS.char.sqq.v2; // 2. 闭眼
+                        } else if (['pain'].includes(mood)) {
+                            spriteSrc = ASSETS.char.sqq.v3; // 3. 闭眼脸红
+                        } else if (['shocked', 'soft', 'worried', 'surprised'].includes(mood)) {
+                            spriteSrc = ASSETS.char.sqq.v4; // 4. 目光躲闪
+                        } else if (['shame', 'dark'].includes(mood)) {
+                            spriteSrc = ASSETS.char.sqq.v5; // 5. 目光躲闪+脸红
+                        }
+
+                        return html`<img src=${spriteSrc} class="char-sprite absolute bottom-0 left-1/2 md:left-[60%] -translate-x-1/2 h-[85%] object-contain object-bottom" />`;
+                    })()}
                         </div>
                     </div>
 
