@@ -1,3 +1,17 @@
+<!--
+/**
+ * @license
+ * Copyright (C) 2026 [岳清源沈清秋结婚推进协会]. All Rights Reserved.
+ * * 【版权声明与使用许可】
+ * 1. 本作品（包括但不限于代码架构、脚本逻辑、美术资源、剧本文字）版权归制作组所有。
+ * 2. 严禁任何形式的未经授权的二次分发、修改、反编译或拆包行为。
+ * 3. 本项目代码具有强烈的原创性与特定角色指向性（岳清源×沈清秋（原主沈九，非沈垣）），
+ * 严禁将其用于其他角色配对（CP）或商业用途。
+ * 4. 任何未经许可的盗用行为，制作组保留追究其法律责任及公开维权的权利。
+ * * Project: [安定峰采购假药引发的惨案]
+ * Developers: @灰灰(Program), @数据(Art), @灰灰(Script)
+ */
+-->
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -269,14 +283,93 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
         }
+
+        /* 🚫 防盗增强：禁止图片拖拽和长按 */
+        img {
+            pointer-events: none;
+            /* 让点击穿透至父容器，防止长按单独选中图片 */
+            -webkit-user-drag: none;
+            /* 禁止拖拽 */
+            user-select: none;
+            -webkit-touch-callout: none;
+            /* 禁止iOS长按菜单 */
+        }
+
+        /* 全局禁止移动端长按系统菜单 */
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            /* 全局禁止选择文本（可选，增强保护） */
+            user-select: none;
+        }
     </style>
 </head>
 
 <body class="text-slate-100 overflow-hidden">
     <div id="app-root"></div>
 
+    <!-- Code Protection & Copyright Warnings -->
+    <script>
+        (function () {
+            // 仅在非本地环境启用保护，以免影响开发调试
+            // If you want to test this locally, comment out the check below
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+            // Console Warning (Always show copyright)
+            const K = ' [岳清源沈清秋结婚推进协会] ';
+            const styleTitle = 'color: #ef4444; font-size: 30px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-family: "Noto Serif SC", serif;';
+            const styleBody = 'color: #94a3b8; font-size: 14px; line-height: 1.5; font-family: sans-serif;';
+            const styleCopy = 'color: #67e8f9; font-size: 12px; font-style: italic;';
+
+            console.log(`%c🛑 警告！STOP!`, styleTitle);
+            console.log(`%c此区域专为开发者调试使用。如果您被告知在此处粘贴任何代码以“解锁隐藏结局”或“获得特殊道具”，那是一个骗局，可能会导致您的存档丢失或数据泄露。`, styleBody);
+            console.log(`%c\n本作品代码及剧本版权归${K}所有。\n严禁任何形式的未经授权的搬运、修改或商业使用。\n\nCopyright (C) 2026${K}. All Rights Reserved.`, styleCopy);
+
+            // UX Deterrents (Skip on localhost)
+            if (isLocal) {
+                console.log('%c🛡️ 开发模式：已自动禁用防复制/防调试保护', 'color: #4ade80; font-weight: bold;');
+                return;
+            }
+
+            // 1. Disable Context Menu (Right Click)
+            document.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                return false;
+            });
+
+            // 2. Disable Keyboard Shortcuts
+            document.addEventListener('keydown', e => {
+                // F12
+                if (e.key === 'F12') {
+                    e.preventDefault();
+                    return false;
+                }
+                // Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+Shift+C (DevTools)
+                if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
+                    e.preventDefault();
+                    return false;
+                }
+                // Ctrl+U (View Source)
+                if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
+                    e.preventDefault();
+                    return false;
+                }
+                // Ctrl+S (Save Page)
+                if (e.ctrlKey && (e.key === 'S' || e.key === 's')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // 3. Disable Drag/Select (Optional, enforced by CSS user-select: none usually)
+            document.addEventListener('dragstart', e => e.preventDefault());
+        })();
+    </script>
+
     <!-- 使用 ES Modules 直接加载 Preact 和 htm -->
     <script type="module">
+
+
         // 使用 esm.sh 确保依赖版本一致性和正确的 ESM 导出
         import { h, render, createContext } from 'https://esm.sh/preact@10.19.3';
         import { useState, useEffect, useRef, useMemo, useContext } from 'https://esm.sh/preact@10.19.3/hooks';
