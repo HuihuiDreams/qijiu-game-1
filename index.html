@@ -21,6 +21,34 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>安定峰采购假药引发的惨案 VN风</title>
     <meta name="description" content="一个关于修仙界丹药与爱恨情仇的视觉小说。">
+    <meta name="keywords" content="视觉小说,修仙,岳清源,沈清秋,互动小说,文字游戏">
+    <meta name="author" content="岳清源沈清秋结婚推进协会">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="./qijiu_start_screen (1).jpg">
+    <link rel="apple-touch-icon" href="./qijiu_start_screen (1).jpg">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://huihuidreams.github.io/qijiu-game-1/">
+    <meta property="og:title" content="安定峰采购假药引发的惨案 VN风">
+    <meta property="og:description" content="一个关于修仙界的爱恨情仇的视觉小说。岳清源×沈清秋（沈九，非沈垣），破镜重圆，情不知所起，一往而深。">
+    <meta property="og:image" content="./qijiu_start_screen (1).jpg">
+    <meta property="og:locale" content="zh_CN">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://huihuidreams.github.io/qijiu-game-1/">
+    <meta name="twitter:title" content="安定峰采购假药引发的惨案 VN风">
+    <meta name="twitter:description" content="一个关于修仙界丹药与爱恨情仇的视觉小说。岳清源×沈清秋，破镜重圆，情不知所起，一往而深。">
+    <meta name="twitter:image" content="./qijiu_start_screen (1).jpg">
+
+    <!-- Additional SEO -->
+    <meta name="theme-color" content="#0d0d1a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="安定峰采购假药引发的惨案">
     <!-- Tailwind CSS - 版本锁定为 3.4.1 -->
     <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <style>
@@ -377,6 +405,39 @@
         import htm from 'https://esm.sh/htm@3.1.1';
 
         const html = htm.bind(h);
+
+        // --- 全局错误处理 ---
+        // 捕获同步JavaScript错误
+        window.addEventListener('error', (event) => {
+            console.error('🚨 全局错误捕获:', {
+                message: event.message,
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno,
+                error: event.error
+            });
+
+            // 防止默认的控制台错误输出（可选）
+            // event.preventDefault();
+
+            // 可以在这里显示用户友好的错误提示
+            // showAlert('抱歉，游戏遇到了一个错误。请刷新页面重试。');
+        });
+
+        // 捕获未处理的Promise拒绝
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('🚨 未处理的Promise拒绝:', {
+                reason: event.reason,
+                promise: event.promise
+            });
+
+            // 防止默认的控制台警告
+            // event.preventDefault();
+
+            // 可以在这里显示用户友好的错误提示
+            // showAlert('抱歉，加载资源时出现问题。请检查网络连接后刷新页面。');
+        });
+
 
         // --- Storage 工具模块 (安全的 localStorage 封装) ---
         const Storage = {
