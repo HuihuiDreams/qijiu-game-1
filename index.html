@@ -377,6 +377,80 @@
 
         const html = htm.bind(h);
 
+        // --- Storage 工具模块 (安全的 localStorage 封装) ---
+        const Storage = {
+            set: (key, value, retryCount = 0) => {
+                // 防止无限递归，最多重试3次
+                const MAX_RETRY = 3;
+                
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                    return { success: true };
+                } catch (e) {
+                    if (e.name === 'QuotaExceededError') {
+                        // 存储空间不足，尝试清理最旧的存档
+                        if (retryCount >= MAX_RETRY) {
+                            console.warn('存储空间不足，已尝试清理但仍有问题');
+                            return { success: false, error: 'QuotaExceededError' };
+                        }
+                        
+                        try {
+                            const keys = Object.keys(localStorage)
+                                .filter(k => k.startsWith('qijiu_save_slot_'))
+                                .map(k => {
+                                    try {
+                                        const itemData = JSON.parse(localStorage.getItem(k));
+                                        return {
+                                            key: k,
+                                            data: itemData,
+                                            timestamp: itemData?.timestamp || 0
+                                        };
+                                    } catch {
+                                        return { key: k, data: null, timestamp: 0 };
+                                    }
+                                })
+                                .filter(item => item.data !== null)
+                                .sort((a, b) => a.timestamp - b.timestamp);
+                            
+                            if (keys.length > 0) {
+                                localStorage.removeItem(keys[0].key);
+                                // 重试保存，增加重试计数
+                                return Storage.set(key, value, retryCount + 1);
+                            }
+                        } catch (cleanupError) {
+                            console.error('清理存档时出错:', cleanupError);
+                        }
+                        console.warn('存储空间不足，且无法清理旧数据');
+                        return { success: false, error: 'QuotaExceededError' };
+                    } else if (e.name === 'SecurityError') {
+                        console.warn('隐私模式下无法使用 localStorage');
+                        return { success: false, error: 'SecurityError' };
+                    } else {
+                        console.error('Storage error:', e);
+                        return { success: false, error: e.name || 'UnknownError' };
+                    }
+                }
+            },
+            get: (key, defaultValue = null) => {
+                try {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : defaultValue;
+                } catch (e) {
+                    console.error('Storage read error:', e);
+                    return defaultValue;
+                }
+            },
+            remove: (key) => {
+                try {
+                    localStorage.removeItem(key);
+                    return true;
+                } catch (e) {
+                    console.error('Storage remove error:', e);
+                    return false;
+                }
+            }
+        };
+
         // --- 资源配置 (保持原资源) ---
         const ASSETS = {
             bg: {
@@ -1231,8 +1305,8 @@
             // 已读文本记录 (使用 Set 存储已读的唯一标识)
             const [readTextIds, setReadTextIds] = useState(() => {
                 try {
-                    const saved = localStorage.getItem(READ_TEXT_KEY);
-                    return saved ? new Set(JSON.parse(saved)) : new Set();
+                    const saved = Storage.get(READ_TEXT_KEY);
+                    return saved ? new Set(saved) : new Set();
                 } catch {
                     return new Set();
                 }
@@ -1242,8 +1316,8 @@
             const UNLOCKED_ENDINGS_KEY = 'qijiu_unlocked_endings';
             const [unlockedEndings, setUnlockedEndings] = useState(() => {
                 try {
-                    const saved = localStorage.getItem(UNLOCKED_ENDINGS_KEY);
-                    return saved ? new Set(JSON.parse(saved)) : new Set();
+                    const saved = Storage.get(UNLOCKED_ENDINGS_KEY);
+                    return saved ? new Set(saved) : new Set();
                 } catch {
                     return new Set();
                 }
@@ -1253,9 +1327,9 @@
             const UNLOCKED_CHAPTERS_KEY = 'qijiu_unlocked_chapters';
             const [unlockedChapters, setUnlockedChapters] = useState(() => {
                 try {
-                    const saved = localStorage.getItem(UNLOCKED_CHAPTERS_KEY);
+                    const saved = Storage.get(UNLOCKED_CHAPTERS_KEY);
                     // 默认解锁第一章
-                    return saved ? new Set(JSON.parse(saved)) : new Set(['chapter1']);
+                    return saved ? new Set(saved) : new Set(['chapter1']);
                 } catch {
                     return new Set(['chapter1']);
                 }
@@ -1266,15 +1340,18 @@
             const SETTINGS_KEY = 'qijiu_settings';
             const loadSettings = () => {
                 try {
-                    const saved = localStorage.getItem(SETTINGS_KEY);
-                    return saved ? JSON.parse(saved) : { textSpeed: 30 };
+                    const saved = Storage.get(SETTINGS_KEY);
+                    return saved || { textSpeed: 30 };
                 } catch { return { textSpeed: 30 }; }
             };
             const [textSpeed, setTextSpeed] = useState(() => loadSettings().textSpeed);
 
             const handleTextSpeedChange = (newSpeed) => {
                 setTextSpeed(newSpeed);
-                localStorage.setItem(SETTINGS_KEY, JSON.stringify({ textSpeed: newSpeed }));
+                const result = Storage.set(SETTINGS_KEY, { textSpeed: newSpeed });
+                if (!result.success) {
+                    console.warn('保存设置失败:', result.error);
+                }
             };
 
             const audioRef = useRef(new Audio(ASSETS.audio.bgm));
@@ -1337,10 +1414,9 @@
                     const newUnlocked = new Set(unlockedChapters);
                     newUnlocked.add(gameState.sceneId);
                     setUnlockedChapters(newUnlocked);
-                    try {
-                        localStorage.setItem(UNLOCKED_CHAPTERS_KEY, JSON.stringify([...newUnlocked]));
-                    } catch (e) {
-                        console.error('保存章节解锁记录失败:', e);
+                    const result = Storage.set(UNLOCKED_CHAPTERS_KEY, [...newUnlocked]);
+                    if (!result.success) {
+                        console.error('保存章节解锁记录失败:', result.error);
                     }
                 }
 
@@ -1449,10 +1525,13 @@
                 const prevIsStart = prevState.sceneId === 'start';
 
                 if (!prevIsStart && !prevIsChoice) {
-                    localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify({
+                    const result = Storage.set(AUTO_SAVE_KEY, {
                         ...prevState,
                         timestamp: Date.now()
-                    }));
+                    });
+                    if (!result.success) {
+                        console.warn('自动存档失败:', result.error);
+                    }
                 }
                 prevGameState.current = gameState;
             }, [gameState]);
@@ -1462,14 +1541,14 @@
             const getAllSaves = () => {
                 const saves = {};
                 for (let i = 1; i <= 12; i++) {
-                    const data = localStorage.getItem(`${SAVE_SLOT_PREFIX}${i}`);
-                    if (data) saves[i] = JSON.parse(data);
+                    const data = Storage.get(`${SAVE_SLOT_PREFIX}${i}`);
+                    if (data) saves[i] = data;
                 }
                 return saves;
             };
 
             const handleSaveSlot = (slotId) => {
-                const existingData = localStorage.getItem(`${SAVE_SLOT_PREFIX}${slotId}`);
+                const existingData = Storage.get(`${SAVE_SLOT_PREFIX}${slotId}`);
                 // Improve prompt logic
                 const promptMsg = existingData
                     ? `是否覆盖 存档 ${slotId} ?`
@@ -1482,18 +1561,21 @@
                         previewText: currentLine?.text || '剧情片段',
                         speaker: currentLine?.speaker || '旁白'
                     };
-                    localStorage.setItem(`${SAVE_SLOT_PREFIX}${slotId}`, JSON.stringify(saveData));
-                    setRefreshSaves(prev => prev + 1);
-                    alert(`存档 ${slotId} 保存成功！`);
+                    const result = Storage.set(`${SAVE_SLOT_PREFIX}${slotId}`, saveData);
+                    if (result.success) {
+                        setRefreshSaves(prev => prev + 1);
+                        alert(`存档 ${slotId} 保存成功！`);
+                    } else {
+                        alert(`存档 ${slotId} 保存失败：${result.error || '未知错误'}`);
+                    }
                 }
             };
 
             const handleLoadSlot = (slotId) => {
-                const data = localStorage.getItem(`${SAVE_SLOT_PREFIX}${slotId}`);
+                const data = Storage.get(`${SAVE_SLOT_PREFIX}${slotId}`);
                 if (data) {
                     if (window.confirm(`读取存档 ${slotId} ?\n当前未保存的进度将丢失。`)) {
-                        const saved = JSON.parse(data);
-                        setGameState(saved);
+                        setGameState(data);
                         setIsSaveLoadOpen(false);
                         setIsMenuOpen(false);
                         setIsHistoryOpen(false);
@@ -1505,15 +1587,19 @@
 
             const handleDeleteSlot = (slotId) => {
                 if (window.confirm(`确认删除存档 ${slotId} ?`)) {
-                    localStorage.removeItem(`${SAVE_SLOT_PREFIX}${slotId}`);
-                    setRefreshSaves(prev => prev + 1);
+                    const success = Storage.remove(`${SAVE_SLOT_PREFIX}${slotId}`);
+                    if (success) {
+                        setRefreshSaves(prev => prev + 1);
+                    } else {
+                        console.warn('删除存档失败');
+                    }
                 }
             };
 
             const loadAutoSave = () => {
-                const data = localStorage.getItem(AUTO_SAVE_KEY);
+                const data = Storage.get(AUTO_SAVE_KEY);
                 if (data) {
-                    setGameState(JSON.parse(data));
+                    setGameState(data);
                 } else {
                     alert('没有找到自动存档');
                 }
@@ -1528,10 +1614,9 @@
                     newReadTextIds.add(textId);
                     setReadTextIds(newReadTextIds);
                     // 保存到 localStorage
-                    try {
-                        localStorage.setItem(READ_TEXT_KEY, JSON.stringify([...newReadTextIds]));
-                    } catch (e) {
-                        console.error('保存已读记录失败:', e);
+                    const result = Storage.set(READ_TEXT_KEY, [...newReadTextIds]);
+                    if (!result.success) {
+                        console.error('保存已读记录失败:', result.error);
                     }
                 }
 
@@ -1626,7 +1711,7 @@
                                 loadAutoSave();
                             }
                         }}
-                        hasAutoSave=${!!localStorage.getItem(AUTO_SAVE_KEY)}
+                        hasAutoSave=${!!Storage.get(AUTO_SAVE_KEY)}
                         onEndings=${() => setIsEndingsOpen(true)}
                         onChapters=${() => setIsChaptersOpen(true)}
                         unlockedEndingsCount=${unlockedEndings.size}
@@ -1648,10 +1733,9 @@
                         const newUnlocked = new Set(unlockedEndings);
                         newUnlocked.add(gameState.sceneId);
                         setUnlockedEndings(newUnlocked);
-                        try {
-                            localStorage.setItem(UNLOCKED_ENDINGS_KEY, JSON.stringify([...newUnlocked]));
-                        } catch (e) {
-                            console.error('保存结局解锁记录失败:', e);
+                        const result = Storage.set(UNLOCKED_ENDINGS_KEY, [...newUnlocked]);
+                        if (!result.success) {
+                            console.error('保存结局解锁记录失败:', result.error);
                         }
                     }
 

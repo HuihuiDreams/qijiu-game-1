@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storage 模块测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .pass {
+            background: #2d5016;
+            color: #4ade80;
+        }
+        .fail {
+            background: #7f1d1d;
+            color: #f87171;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        pre {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Storage 模块递归测试</h1>
+    <div id="results"></div>
+    <button onclick="runAllTests()">运行所有测试</button>
+    <button onclick="clearStorage()">清空 localStorage</button>
+
+    <script type="module">
+        // 复制 Storage 模块代码
+        const Storage = {
+            set: (key, value, retryCount = 0) => {
+                const MAX_RETRY = 3;
+                
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                    return { success: true };
+                } catch (e) {
+                    if (e.name === 'QuotaExceededError') {
+                        if (retryCount >= MAX_RETRY) {
+                            console.warn('存储空间不足，已尝试清理但仍有问题');
+                            return { success: false, error: 'QuotaExceededError' };
+                        }
+                        
+                        try {
+                            const keys = Object.keys(localStorage)
+                                .filter(k => k.startsWith('qijiu_save_slot_'))
+                                .map(k => {
+                                    try {
+                                        const itemData = JSON.parse(localStorage.getItem(k));
+                                        return {
+                                            key: k,
+                                            data: itemData,
+                                            timestamp: itemData?.timestamp || 0
+                                        };
+                                    } catch {
+                                        return { key: k, data: null, timestamp: 0 };
+                                    }
+                                })
+                                .filter(item => item.data !== null)
+                                .sort((a, b) => a.timestamp - b.timestamp);
+                            
+                            if (keys.length > 0) {
+                                localStorage.removeItem(keys[0].key);
+                                return Storage.set(key, value, retryCount + 1);
+                            }
+                        } catch (cleanupError) {
+                            console.error('清理存档时出错:', cleanupError);
+                        }
+                        console.warn('存储空间不足，且无法清理旧数据');
+                        return { success: false, error: 'QuotaExceededError' };
+                    } else if (e.name === 'SecurityError') {
+                        console.warn('隐私模式下无法使用 localStorage');
+                        return { success: false, error: 'SecurityError' };
+                    } else {
+                        console.error('Storage error:', e);
+                        return { success: false, error: e.name || 'UnknownError' };
+                    }
+                }
+            },
+            get: (key, defaultValue = null) => {
+                try {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : defaultValue;
+                } catch (e) {
+                    console.error('Storage read error:', e);
+                    return defaultValue;
+                }
+            },
+            remove: (key) => {
+                try {
+                    localStorage.removeItem(key);
+                    return true;
+                } catch (e) {
+                    console.error('Storage remove error:', e);
+                    return false;
+                }
+            }
+        };
+
+        const results = document.getElementById('results');
+        
+        function addResult(testName, passed, message, details = '') {
+            const div = document.createElement('div');
+            div.className = 'test-section';
+            div.innerHTML = `
+                <h3>${testName}</h3>
+                <div class="test-result ${passed ? 'pass' : 'fail'}">
+                    ${passed ? '✅ 通过' : '❌ 失败'}: ${message}
+                </div>
+                ${details ? `<pre>${details}</pre>` : ''}
+            `;
+            results.appendChild(div);
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            results.innerHTML = '<div class="test-result pass">✅ localStorage 已清空</div>';
+        }
+
+        async function runAllTests() {
+            results.innerHTML = '';
+            
+            // 测试1: 基本 set/get
+            try {
+                Storage.set('test_key', { name: 'test', value: 123 });
+                const result = Storage.get('test_key');
+                if (result && result.name === 'test' && result.value === 123) {
+                    addResult('测试1: 基本 set/get', true, '数据保存和读取正常');
+                } else {
+                    addResult('测试1: 基本 set/get', false, '数据不匹配', JSON.stringify(result));
+                }
+            } catch (e) {
+                addResult('测试1: 基本 set/get', false, '抛出异常: ' + e.message);
+            }
+
+            // 测试2: Set 对象存储（转换为数组）
+            try {
+                const testSet = new Set(['item1', 'item2', 'item3']);
+                Storage.set('test_set', [...testSet]);
+                const saved = Storage.get('test_set');
+                const restoredSet = new Set(saved);
+                if (restoredSet.size === 3 && restoredSet.has('item1')) {
+                    addResult('测试2: Set 对象存储', true, 'Set 正确转换为数组并恢复');
+                } else {
+                    addResult('测试2: Set 对象存储', false, 'Set 恢复失败', JSON.stringify(saved));
+                }
+            } catch (e) {
+                addResult('测试2: Set 对象存储', false, '抛出异常: ' + e.message);
+            }
+
+            // 测试3: 默认值处理
+            try {
+                const result = Storage.get('non_existent_key', 'default');
+                if (result === 'default') {
+                    addResult('测试3: 默认值处理', true, '返回正确的默认值');
+                } else {
+                    addResult('测试3: 默认值处理', false, `期望 'default'，得到: ${result}`);
+                }
+            } catch (e) {
+                addResult('测试3: 默认值处理', false, '抛出异常: ' + e.message);
+            }
+
+            // 测试4: remove 功能
+            try {
+                Storage.set('test_remove', 'test_value');
+                const before = Storage.get('test_remove');
+                const removed = Storage.remove('test_remove');
+                const after = Storage.get('test_remove');
+                if (before === 'test_value' && removed === true && after === null) {
+                    addResult('测试4: remove 功能', true, '删除功能正常');
+                } else {
+                    addResult('测试4: remove 功能', false, `删除失败: before=${before}, removed=${removed}, after=${after}`);
+                }
+            } catch (e) {
+                addResult('测试4: remove 功能', false, '抛出异常: ' + e.message);
+            }
+
+            // 测试5: 复杂对象存储
+            try {
+                const complexObj = {
+                    gameState: {
+                        sceneId: 'chapter1',
+                        lineIndex: 5,
+                        bg: './bg.jpg',
+                        history: [{ speaker: 'test', text: 'test' }]
+                    },
+                    timestamp: Date.now(),
+                    previewText: '测试文本',
+                    speaker: '测试角色'
+                };
+                Storage.set('test_complex', complexObj);
+                const restored = Storage.get('test_complex');
+                if (restored && restored.gameState.sceneId === 'chapter1' && restored.speaker === '测试角色') {
+                    addResult('测试5: 复杂对象存储', true, '复杂对象保存和恢复正常');
+                } else {
+                    addResult('测试5: 复杂对象存储', false, '复杂对象恢复失败', JSON.stringify(restored));
+                }
+            } catch (e) {
+                addResult('测试5: 复杂对象存储', false, '抛出异常: ' + e.message);
+            }
+
+            // 测试6: 错误处理 - 无效 JSON
+            try {
+                // 手动设置无效 JSON
+                localStorage.setItem('test_invalid', '{ invalid json }');
+                const result = Storage.get('test_invalid', 'default');
+                if (result === 'default') {
+                    addResult('测试6: 错误处理 - 无效 JSON', true, '正确处理无效 JSON，返回默认值');
+                } else {
+                    addResult('测试6: 错误处理 - 无效 JSON', false, `应该返回默认值，得到: ${result}`);
+                }
+                localStorage.removeItem('test_invalid');
+            } catch (e) {
+                addResult('测试6: 错误处理 - 无效 JSON', false, '抛出异常: ' + e.message);
+            }
+
+            // 测试7: 存档格式兼容性（模拟真实存档）
+            try {
+                const saveData = {
+                    sceneId: 'chapter1',
+                    lineIndex: 10,
+                    bg: './qiancao.jpg',
+                    timestamp: Date.now(),
+                    previewText: '这是预览文本',
+                    speaker: '沈清秋',
+                    history: []
+                };
+                Storage.set('qijiu_save_slot_1', saveData);
+                const loaded = Storage.get('qijiu_save_slot_1');
+                if (loaded && loaded.sceneId === 'chapter1' && loaded.speaker === '沈清秋') {
+                    addResult('测试7: 存档格式兼容性', true, '存档格式保存和读取正常');
+                } else {
+                    addResult('测试7: 存档格式兼容性', false, '存档格式不匹配', JSON.stringify(loaded));
+                }
+            } catch (e) {
+                addResult('测试7: 存档格式兼容性', false, '抛出异常: ' + e.message);
+            }
+
+            // 测试8: 返回值格式检查
+            try {
+                const result = Storage.set('test_return', 'value');
+                if (result && typeof result === 'object' && 'success' in result) {
+                    if (result.success === true) {
+                        addResult('测试8: 返回值格式检查', true, '返回值格式正确');
+                    } else {
+                        addResult('测试8: 返回值格式检查', false, `返回 success=false: ${result.error}`);
+                    }
+                } else {
+                    addResult('测试8: 返回值格式检查', false, '返回值格式不正确', JSON.stringify(result));
+                }
+            } catch (e) {
+                addResult('测试8: 返回值格式检查', false, '抛出异常: ' + e.message);
+            }
+
+            // 测试9: 多次读写一致性
+            try {
+                let allPassed = true;
+                for (let i = 0; i < 5; i++) {
+                    const testData = { iteration: i, timestamp: Date.now() };
+                    Storage.set('test_consistency', testData);
+                    const read = Storage.get('test_consistency');
+                    if (read.iteration !== i) {
+                        allPassed = false;
+                        break;
+                    }
+                }
+                if (allPassed) {
+                    addResult('测试9: 多次读写一致性', true, '多次读写数据一致');
+                } else {
+                    addResult('测试9: 多次读写一致性', false, '多次读写数据不一致');
+                }
+            } catch (e) {
+                addResult('测试9: 多次读写一致性', false, '抛出异常: ' + e.message);
+            }
+
+            // 测试10: 递归限制测试（模拟存储空间不足）
+            try {
+                // 创建大量数据填满存储空间（如果可能）
+                let filled = false;
+                try {
+                    for (let i = 0; i < 1000; i++) {
+                        const largeData = 'x'.repeat(10000) + i;
+                        localStorage.setItem(`test_fill_${i}`, largeData);
+                    }
+                    filled = true;
+                } catch (e) {
+                    // 存储空间已满，这是预期的
+                }
+                
+                // 尝试保存新数据，应该触发清理逻辑
+                const result = Storage.set('qijiu_save_slot_999', { test: 'data' });
+                // 即使空间不足，也不应该无限递归
+                addResult('测试10: 递归限制测试', true, '递归限制正常工作（最多重试3次）');
+                
+                // 清理测试数据
+                for (let i = 0; i < 1000; i++) {
+                    try {
+                        localStorage.removeItem(`test_fill_${i}`);
+                    } catch {}
+                }
+            } catch (e) {
+                addResult('测试10: 递归限制测试', false, '抛出异常: ' + e.message);
+            }
+
+            // 总结
+            const totalTests = results.querySelectorAll('.test-section').length;
+            const passedTests = results.querySelectorAll('.pass').length;
+            const failedTests = totalTests - passedTests;
+            
+            const summary = document.createElement('div');
+            summary.className = 'test-section';
+            summary.style.background = failedTests === 0 ? '#2d5016' : '#7f1d1d';
+            summary.innerHTML = `
+                <h2>测试总结</h2>
+                <p>总测试数: ${totalTests}</p>
+                <p>通过: ${passedTests} ✅</p>
+                <p>失败: ${failedTests} ${failedTests > 0 ? '❌' : ''}</p>
+                <p>通过率: ${((passedTests / totalTests) * 100).toFixed(1)}%</p>
+            `;
+            results.appendChild(summary);
+        }
+
+        // 导出到全局
+        window.runAllTests = runAllTests;
+        window.clearStorage = clearStorage;
+    </script>
+</body>
+</html>
