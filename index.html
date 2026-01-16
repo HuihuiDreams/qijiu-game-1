@@ -452,6 +452,45 @@
             }
         };
 
+        // --- 常量配置 ---
+        const CONSTANTS = {
+            // 打字机效果速度（毫秒/字符）
+            TYPING_SPEED: {
+                MIN: 10,        // 最快速度
+                MAX: 80,        // 最慢速度
+                DEFAULT: 30     // 默认速度
+            },
+
+            // 自动模式延迟时间（毫秒）
+            AUTO_MODE_DELAY: {
+                BASE: 500,      // 基础延迟
+                PER_CHAR: 80    // 每个字符增加的延迟
+            },
+
+            // localStorage 存储键名
+            STORAGE_KEYS: {
+                AUTO_SAVE: 'qijiu_auto_save',
+                SAVE_SLOT_PREFIX: 'qijiu_save_slot_',
+                READ_TEXT: 'qijiu_read_text',
+                UNLOCKED_ENDINGS: 'qijiu_unlocked_endings',
+                UNLOCKED_CHAPTERS: 'qijiu_unlocked_chapters',
+                SETTINGS: 'qijiu_settings'
+            },
+
+            // 动画持续时间（毫秒）
+            ANIMATION: {
+                FADE_DURATION: 500,         // 淡入淡出
+                SHAKE_DURATION: 600,        // 震动效果
+                RHYTHM_DURATION: 500,       // 节奏震动
+                PRELOADER_DELAY: 500        // 预加载完成后的延迟
+            },
+
+            // 保存槽位配置
+            SAVE_SLOTS: {
+                MAX_SLOTS: 10               // 最大存档槽位数
+            }
+        };
+
         // --- 资源配置 (保持原资源) ---
         const ASSETS = {
             bg: {
@@ -849,7 +888,7 @@
                         loaded++;
                         setProgress(Math.floor((loaded / total) * 100));
                         if (loaded === total) {
-                            setTimeout(onLoadComplete, 500);
+                            setTimeout(onLoadComplete, CONSTANTS.ANIMATION.PRELOADER_DELAY);
                         }
                     };
                 });
