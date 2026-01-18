@@ -17,6 +17,22 @@
 
 <head>
     <meta charset="UTF-8">
+
+    <!-- Content Security Policy - 安全策略配置 -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://esm.sh;
+        style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.loli.net;
+        img-src 'self' data: blob:;
+        font-src 'self' https://fonts.loli.net https://gstatic.loli.net data:;
+        connect-src 'self' https://fonts.loli.net https://gstatic.loli.net;
+        media-src 'self' blob:;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        frame-ancestors 'none';
+    ">
+
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>安定峰采购假药引发的惨案 VN风</title>
@@ -25,15 +41,15 @@
     <meta name="author" content="岳清源沈清秋结婚推进协会">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="./qijiu_start_screen (1).jpg">
-    <link rel="apple-touch-icon" href="./qijiu_start_screen (1).jpg">
+    <link rel="icon" type="image/png" href="./start_screen.jpg">
+    <link rel="apple-touch-icon" href="./start_screen.jpg">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://huihuidreams.github.io/qijiu-game-1/">
     <meta property="og:title" content="安定峰采购假药引发的惨案 VN风">
     <meta property="og:description" content="一个关于修仙界的爱恨情仇的视觉小说。岳清源×沈清秋（沈九，非沈垣），破镜重圆，情不知所起，一往而深。">
-    <meta property="og:image" content="./qijiu_start_screen (1).jpg">
+    <meta property="og:image" content="./start_screen.jpg">
     <meta property="og:locale" content="zh_CN">
 
     <!-- Twitter Card -->
@@ -41,7 +57,7 @@
     <meta name="twitter:url" content="https://huihuidreams.github.io/qijiu-game-1/">
     <meta name="twitter:title" content="安定峰采购假药引发的惨案 VN风">
     <meta name="twitter:description" content="一个关于修仙界丹药与爱恨情仇的视觉小说。岳清源×沈清秋，破镜重圆，情不知所起，一往而深。">
-    <meta name="twitter:image" content="./qijiu_start_screen (1).jpg">
+    <meta name="twitter:image" content="./start_screen.jpg">
 
     <!-- Additional SEO -->
     <meta name="theme-color" content="#0d0d1a">
@@ -337,6 +353,8 @@
 <body class="text-slate-100 overflow-hidden">
     <div id="app-root"></div>
 
+
+
     <!-- Code Protection & Copyright Warnings -->
     <script>
         (function () {
@@ -563,8 +581,8 @@
                 ruin: './ruin.jpg',
                 lingxi: './lingxicave.jpg',
                 nuanhong: './nuanhongge.jpg',
-                start: './qijiu_start_screen (1).jpg',
-                endingB: './Image (1).png'
+                start: './start_screen.jpg',
+                endingB: './ending_b.png'
             },
             char: {
                 sqq: {
@@ -1643,10 +1661,10 @@
                     // console.log('遇到未读文本，停止快进');
                 }
 
-                // 背景切换
-                if (currentLine.bg) {
-                    setGameState(prev => ({ ...prev, bg: currentLine.bg }));
-                }
+                // 背景切换 (已移至 handleNext 预处理)
+                // if (currentLine.bg) {
+                //     setGameState(prev => ({ ...prev, bg: currentLine.bg }));
+                // }
 
                 // 音效
                 if (currentLine.sound && audioEnabled && !isSkip) { // Skip时不播放音效或由浏览器自动处理（可能会堆叠，这里简单处理为不播放）
@@ -1853,24 +1871,28 @@
                     setStateHistory(prev => [...prev.slice(-50), { ...gameState }]); // 最多保存50条
 
                     if (gameState.lineIndex < currentScene.lines.length - 1) {
-                        setGameState(prev => ({
-                            ...prev,
-                            lineIndex: prev.lineIndex + 1,
-                            history: [...prev.history, newHistoryItem]
-                        }));
+                        setGameState(prev => {
+                            const nextLine = currentScene.lines[prev.lineIndex + 1];
+                            return {
+                                ...prev,
+                                lineIndex: prev.lineIndex + 1,
+                                bg: nextLine.bg || prev.bg, // 立即更新背景
+                                history: [...prev.history, newHistoryItem]
+                            };
+                        });
                     } else {
                         // 章节结束
                         if (currentScene.next) {
                             // 检查下一章是否是Ending或Choice
                             const nextScene = SCENES[currentScene.next];
-
                             // 保存本章最后一句到历史
                             setGameState(prev => {
+                                const nextBg = nextScene.type === 'choice' ? prev.bg : (nextScene.lines?.[0]?.bg || prev.bg);
                                 const nextHistory = [...prev.history, newHistoryItem];
                                 return {
                                     sceneId: currentScene.next,
                                     lineIndex: 0,
-                                    bg: nextScene.type === 'choice' ? prev.bg : (nextScene.lines?.[0]?.bg || prev.bg),
+                                    bg: nextBg,
                                     history: nextHistory
                                 };
                             });
@@ -1898,10 +1920,11 @@
                 setIsAuto(false);
                 setIsSkip(false);
 
+                const nextScene = SCENES[option.next];
                 setGameState(prev => ({
                     sceneId: option.next,
                     lineIndex: 0,
-                    bg: prev.bg,
+                    bg: nextScene?.lines?.[0]?.bg || prev.bg,
                     history: prev.history // 历史记录保留
                 }));
             };
@@ -2059,8 +2082,16 @@
                             onOpenLoad=${() => { setSaveLoadMode('load'); setIsSaveLoadOpen(true); }}
                             onOpenSettings=${() => { setIsSettingsOpen(true); setIsMenuOpen(false); }}
                             onBackTitle=${() => {
-                        setGameState({ sceneId: 'start', lineIndex: 0, bg: ASSETS.bg.bamboo, history: [] });
+                        setTypingText('');
+                        setIsTyping(false);
+                        setIsAuto(false);
+                        setIsSkip(false);
                         setIsMenuOpen(false);
+                        setStateHistory([]);
+                        // Slight delay to allow UI to clear before finding scene 'start'
+                        setTimeout(() => {
+                            setGameState({ sceneId: 'start', lineIndex: 0, bg: ASSETS.bg.start, history: [] });
+                        }, 0);
                     }}
                         />`}
 
