@@ -384,9 +384,61 @@
                 gap: 0.5rem !important;
             }
 
+
             /* 手机横屏：存档界面强制2列 */
             .mobile-landscape-grid-2 {
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+
+            /* --- Choice Modal Mobile Landscape Fixes --- */
+
+            /* --- Choice Modal Mobile Landscape Fixes --- */
+            /* Wrapper: Flex column starting from top with scroll */
+            #screen-choice {
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: flex-start !important;
+                align-items: center !important;
+                overflow-y: auto !important;
+                padding-top: 1.5rem !important;
+                /* Top spacing */
+                padding-bottom: 2rem !important;
+            }
+
+            /* Container: Let it grow naturally */
+            #screen-choice .choice-btn-container {
+                height: auto !important;
+                min-height: 0 !important;
+                padding: 1rem 3rem !important;
+                /* Horizontal padding */
+                justify-content: flex-start !important;
+                overflow: visible !important;
+                /* parent handles scroll */
+                gap: 0.8rem !important;
+            }
+
+            #screen-choice h2 {
+                /* Prompt */
+                font-size: 1.1rem !important;
+                line-height: 1.3 !important;
+                margin-bottom: 0.5rem !important;
+                margin-top: 0 !important;
+            }
+
+            #screen-choice .choice-btn {
+                padding: 0.4rem 1rem !important;
+                min-height: 2.8rem;
+            }
+
+            #screen-choice .choice-btn span {
+                font-size: 0.8rem !important;
+            }
+
+            /* Hide decorative elements */
+            #screen-choice .w-px,
+            #screen-choice .w-12,
+            #screen-choice .material-symbols-outlined {
+                display: none !important;
             }
         }
 
@@ -408,7 +460,62 @@
             /* 全局禁止选择文本（可选，增强保护） */
             user-select: none;
         }
+
+        /* --- IMMERSIVE CHOICE MODAL STYLES --- */
+        .choice-btn-container {
+            perspective: 1000px;
+        }
+
+        .choice-btn {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* Ink Stroke Hover Effect */
+        .choice-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120%;
+            height: 120%;
+            background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuArNkqeFjTVpNHRfJCcrJYo-JRQ6Dq01apUkXTRglFkDzYo6lglc0MlIvZeYTlvpUMAjdlOjUTrdJTszx1fjxbYRxjal4fteOox3-ujO744cWGht7Cz4MssVwCo7F1kjgjqS7Aeb_JRkGecwppamXRIokQvvGis5wEyAQji4rmI1wj7zd-2r5dE1R-HtBAlyv5uuxLkjjgCe_P0O3tfl49hZrtp50hrU5Dmy6dDpSVbM1xQdMt0Hjeu21b8-cHEVdCnGT0pitlXon4');
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transform: translate(-50%, -50%) scaleX(0);
+            transition: all 0.4s ease-out;
+            pointer-events: none;
+            mix-blend-mode: multiply;
+            filter: contrast(1.2) sepia(0.5) hue-rotate(-10deg);
+            z-index: -1;
+        }
+
+        .choice-btn:hover::before {
+            opacity: 0.15;
+            transform: translate(-50%, -50%) scaleX(1);
+        }
+
+        .choice-btn:hover {
+            transform: translateX(10px);
+            padding-left: 2rem;
+        }
+
+        /* Staggered Fade In Animation */
+        @keyframes fadeInUpStagger {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
+
 </head>
 
 <body class="text-slate-100 overflow-hidden">
@@ -1116,27 +1223,27 @@
                     </h1>
                     
                     <div class="flex flex-col gap-2 mt-2 mobile-landscape-gap md:mt-4 lg:mt-8 w-full max-w-xs scale-90 md:scale-100">
-                        <button onClick=${() => onStart()} class="px-4 py-1.5 mobile-landscape-btn md:px-8 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-lg md:text-2xl font-calligraphy rounded transition-all tracking-[0.2em] backdrop-blur-sm">
+                        <button onClick=${() => onStart()} class="btn-bloom px-4 py-1.5 mobile-landscape-btn md:px-8 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-lg md:text-2xl font-calligraphy rounded transition-all tracking-[0.2em] backdrop-blur-sm">
                             开始新游戏
                         </button>
                         
                         <div class="flex gap-2 w-full">
                             ${hasAutoSave && html`
-                            <button onClick=${() => onLoad('auto')} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-sm md:text-lg font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
+                            <button onClick=${() => onLoad('auto')} class="btn-bloom flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-sm md:text-lg font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
                                 继续游戏
                             </button>
                             `}
-                            <button onClick=${() => onLoad('manual')} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-sm md:text-lg font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
+                            <button onClick=${() => onLoad('manual')} class="btn-bloom flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-sm md:text-lg font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
                                 读取存档
                             </button>
                         </div>
                         
                         <!-- 新增：结局回收和章节选择 -->
                         <div class="flex gap-2 w-full mt-1">
-                            <button onClick=${onChapters} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-xs md:text-base font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
+                            <button onClick=${onChapters} class="btn-bloom flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-xs md:text-base font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
                                 章节选择 <span class="text-cyan-400">${unlockedChaptersCount}/${totalChapters}</span>
                             </button>
-                            <button onClick=${onEndings} class="flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-xs md:text-base font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
+                            <button onClick=${onEndings} class="btn-bloom flex-1 px-2 py-1.5 mobile-landscape-btn md:px-4 md:py-3 bg-slate-800/50 hover:bg-slate-700/60 border border-slate-500/40 text-slate-100 text-xs md:text-base font-calligraphy rounded transition-all tracking-[0.1em] backdrop-blur-sm">
                                 结局回收 <span class="text-amber-400">${unlockedEndingsCount}/${TOTAL_ENDINGS}</span>
                             </button>
                         </div>
@@ -1145,19 +1252,44 @@
             </div>
         `;
 
-        // 5. 选项组件
+        // 5. 选项组件 (Immersive "Ink & Fate" Redesign)
         const ChoiceScreen = ({ question, options, onChoice }) => html`
-            <div class="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur flex items-center justify-center p-2 md:p-4">
-                <div class="max-w-4xl w-full md:w-fit bg-slate-900 border-2 border-red-900/50 p-2 md:p-4 lg:p-10 rounded-lg shadow-2xl animate-in zoom-in duration-300 flex flex-col justify-center max-h-full overflow-hidden">
-                    <div class="text-red-500 font-bold mb-1 md:mb-2 lg:mb-6 text-center tracking-widest uppercase text-[10px] md:text-xl lg:text-2xl border-b border-red-900/30 pb-1 shrink-0">命运抉择</div>
-                    <h2 class="text-xs md:text-base lg:text-2xl text-slate-200 font-serif-sc text-center mb-1 md:mb-2 lg:mb-10 leading-relaxed shrink-0">${question}</h2>
-                    
-                    <div class="grid grid-cols-2 gap-2 md:flex md:flex-col md:w-fit md:mx-auto md:gap-4 w-full overflow-y-auto custom-scroll pr-1">
-                        ${options.map(opt => html`
-                            <button onClick=${() => onChoice(opt)} class="group w-full text-left p-2 md:p-3 lg:p-5 border border-slate-700 hover:border-cyan-500 bg-slate-800/50 hover:bg-slate-700 transition-all rounded relative overflow-hidden flex flex-col justify-center min-h-[40px] md:min-h-[60px] lg:min-h-0">
-                                <span class="relative z-10 text-[10px] md:text-sm lg:text-xl font-serif-sc leading-tight mb-0.5 md:mb-1 text-slate-200 group-hover:text-amber-100 transition-colors">${opt.text}</span>
-                                ${opt.subtext && html`<div class="relative z-10 text-[8px] md:text-[10px] lg:text-xs text-slate-500 font-mono group-hover:text-cyan-400 leading-none">${opt.subtext}</div>`}
-                                <div class="absolute inset-0 bg-cyan-900/10 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500"></div>
+            <div id="screen-choice" class="fixed inset-0 z-[90] flex items-center justify-center bg-black/40 backdrop-blur-md animate-fade-in text-slate-900 font-serif-sc">
+                <!-- Floating Ink Background Elements -->
+                <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-b from-black/5 to-transparent rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                    <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-t from-red-900/5 to-transparent rounded-full blur-3xl transform -translate-x-1/3 translate-y-1/3"></div>
+                </div>
+
+                <div class="relative w-full max-w-4xl flex flex-col items-center justify-center p-8 lg:p-12 gap-8 md:gap-12 choice-btn-container">
+                    <!-- Question / Prompt -->
+                    <div class="relative z-10 text-center space-y-4 animate-in zoom-in duration-700">
+                        <div class="w-px h-12 md:h-16 bg-gradient-to-b from-transparent via-slate-900/20 to-transparent mx-auto mb-4"></div>
+                        <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-100 tracking-[0.2em] drop-shadow-sm leading-relaxed" style="text-shadow: 0 0 20px rgba(255,255,255,0.4);">
+                            ${question}
+                        </h2>
+                        <div class="w-12 h-1 bg-red-900/30 mx-auto rounded-full mt-6"></div>
+                    </div>
+
+                    <!-- Options Container -->
+                    <div class="w-full max-w-xl flex flex-col gap-4 relative z-20">
+                        ${options.map((opt, index) => html`
+                            <button 
+                                onClick=${() => onChoice(opt)}
+                                class="choice-btn group w-full text-left relative overflow-hidden py-4 px-6 md:px-8 border-l-2 border-transparent hover:border-red-800 transition-all duration-300 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-r-md shadow-sm"
+                                style="opacity: 0; animation: fadeInUpStagger 0.6s ease-out forwards; animation-delay: ${index * 0.15}s;"
+                            >
+                                <div class="relative z-10 flex items-center justify-between">
+                                    <div class="flex flex-col">
+                                        <span class="font-serif-sc text-lg md:text-xl font-medium tracking-[0.15em] text-slate-200 group-hover:text-red-300 transition-colors">
+                                            ${opt.text}
+                                        </span>
+                                        ${opt.subtext && html`<span class="text-xs text-slate-400 group-hover:text-slate-300 mt-1">${opt.subtext}</span>`}
+                                    </div>
+                                    <span class="material-symbols-outlined text-stone-400 group-hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0">
+                                        →
+                                    </span>
+                                </div>
                             </button>
                         `)}
                     </div>
@@ -1244,21 +1376,21 @@
                 <div class="bg-slate-900 border border-slate-700 p-4 md:p-8 rounded-xl shadow-2xl w-[260px] md:w-[320px] flex flex-col gap-2 md:gap-4 max-h-full overflow-y-auto custom-scroll" onClick=${e => e.stopPropagation()}>
                     <h3 class="text-cyan-400 text-lg md:text-xl font-bold mb-1 md:mb-2 text-center shrink-0">系统菜单</h3>
                     
-                    <button onClick=${onOpenSave} class="w-full p-3 md:p-4 bg-slate-800 hover:bg-cyan-900/30 text-slate-200 text-sm md:text-base rounded transition-colors border border-transparent hover:border-cyan-800 tracking-normal font-sans text-center font-bold shrink-0">
+                    <button onClick=${onOpenSave} class="btn-bloom w-full p-3 md:p-4 bg-slate-800 hover:bg-cyan-900/30 text-slate-200 text-sm md:text-base rounded transition-colors border border-transparent hover:border-cyan-800 tracking-normal font-sans text-center font-bold shrink-0">
                         保存记录
                     </button>
 
-                     <button onClick=${onOpenLoad} class="w-full p-3 md:p-4 bg-slate-800 hover:bg-indigo-900/30 text-slate-200 text-sm md:text-base rounded transition-colors border border-transparent hover:border-indigo-800 tracking-normal font-sans text-center font-bold shrink-0">
+                     <button onClick=${onOpenLoad} class="btn-bloom w-full p-3 md:p-4 bg-slate-800 hover:bg-indigo-900/30 text-slate-200 text-sm md:text-base rounded transition-colors border border-transparent hover:border-indigo-800 tracking-normal font-sans text-center font-bold shrink-0">
                         读取记录
                     </button>
 
-                    <button onClick=${onOpenSettings} class="w-full p-3 md:p-4 bg-slate-800 hover:bg-emerald-900/30 text-slate-200 text-sm md:text-base rounded transition-colors border border-transparent hover:border-emerald-800 tracking-normal font-sans text-center font-bold shrink-0">
+                    <button onClick=${onOpenSettings} class="btn-bloom w-full p-3 md:p-4 bg-slate-800 hover:bg-emerald-900/30 text-slate-200 text-sm md:text-base rounded transition-colors border border-transparent hover:border-emerald-800 tracking-normal font-sans text-center font-bold shrink-0">
                         设置
                     </button>
 
                     <div class="h-px bg-slate-800 my-0 md:my-1 shrink-0"></div>
                     
-                    <button onClick=${onBackTitle} class="w-full p-3 md:p-4 bg-red-900/20 hover:bg-red-900/40 text-red-300 text-sm md:text-base rounded transition-colors tracking-normal font-sans text-center font-bold shrink-0">
+                    <button onClick=${onBackTitle} class="btn-bloom w-full p-3 md:p-4 bg-red-900/20 hover:bg-red-900/40 text-red-300 text-sm md:text-base rounded transition-colors tracking-normal font-sans text-center font-bold shrink-0">
                         返回标题
                     </button>
                     
@@ -1578,7 +1710,10 @@
             const [unlockedEndings, setUnlockedEndings] = useState(() => {
                 try {
                     const saved = Storage.get(UNLOCKED_ENDINGS_KEY);
-                    return saved ? new Set(saved) : new Set();
+                    // 修复 count 显示错误的 Bug：过滤掉无效的结局 ID
+                    // Fix: Filter out invalid ending IDs to prevent incorrect counts (e.g. 4/3)
+                    const validEndings = saved ? saved.filter(id => ENDINGS_META[id]) : [];
+                    return new Set(validEndings);
                 } catch {
                     return new Set();
                 }
@@ -1589,8 +1724,13 @@
             const [unlockedChapters, setUnlockedChapters] = useState(() => {
                 try {
                     const saved = Storage.get(UNLOCKED_CHAPTERS_KEY);
-                    // 默认解锁第一章
-                    return saved ? new Set(saved) : new Set(['chapter1']);
+                    // 默认解锁第一章，并过滤无效章节
+                    // Default to chapter1 and filter invalid chapters
+                    const validChapters = saved ? saved.filter(id => CHAPTERS_META[id]) : ['chapter1'];
+                    // 确保 chapter1 始终在列表中 (Ensure chapter1 is always present)
+                    if (!validChapters.includes('chapter1')) validChapters.push('chapter1');
+
+                    return new Set(validChapters);
                 } catch {
                     return new Set(['chapter1']);
                 }

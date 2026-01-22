@@ -238,13 +238,6 @@ if (await showConfirm("是否覆盖?")) {
 
 ---
 
-## 更新日志
-
-- 2026-01-11: 初次创建，记录 Git 操作问题和解决方案
-- 2026-01-12: 新增“思维死循环”问题的排查与预防方案
-- 2026-01-20: 新增“代码替换失败”、“编码乱码”及“大文件操作”经验总结
-- 2026-01-22: 新增“多游戏存档冲突”以及“存档点击无效”问题的完整分析与解决方案
-
 ---
 
 ### 8. 背景图片切换错误 (快速点击导致的状态竞争)
@@ -301,3 +294,63 @@ if (await showConfirm("是否覆盖?")) {
 - 在处理任何持续时间较长的 UI 动画或过渡时，必须假设状态随时可能在中途改变。
 - 始终实现健壮的 `cleanup` 函数。
 - 对于高频触发的输入（如游戏中的点击），UI 响应逻辑必须能够优雅地处理中断。
+
+---
+
+### 9. 结局计数显示异常 (3/3 显示为 4/3)
+
+**现象**：
+游戏开始画面的结局收集进度显示不正确。例如：
+
+- 实际上只有 2 个结局，却显示 "3/3"。
+- 3 个结局全部收集齐后，显示变成 "4/3"。
+
+**原因分析**：
+这是一个 **数据污染 (Data Pollution)** 问题。
+
+1. **旧数据残留**：在开发过程中，可能更改过结局的 ID（例如从 `ending_he` 改为 `endingHE`），或者在调试时写入了测试用的无效结局 ID。
+2. **缺乏验证机制**：`index.html` 在初始化 `unlockedEndings` 状态时，直接读取了 `localStorage` 中的数组，没有验证这些 ID 是否真实存在于当前的 `ENDINGS_META` 配置中。
+3. **Ghost IDs**：这些无效的 ID（"Ghost IDs"）被计入了 `Set.size`，导致计数虚高。
+
+**解决方案**：
+在状态初始化（State Initialization）阶段增加“过滤清洗”逻辑。
+
+修改 `useState` 的初始化函数，在读取本地存储后，立即将 ID 列表与合法的元数据（Metadata）进行比对，剔除所有非法 ID。
+
+```javascript
+/* Before: 直接读取，无验证 */
+const [unlockedEndings, setUnlockedEndings] = useState(() => {
+    try {
+        const saved = Storage.get(UNLOCKED_ENDINGS_KEY);
+        return saved ? new Set(saved) : new Set();
+    } catch {
+        return new Set();
+    }
+});
+
+/* After: 增加合法性校验 */
+const [unlockedEndings, setUnlockedEndings] = useState(() => {
+    try {
+        const saved = Storage.get(UNLOCKED_ENDINGS_KEY);
+        // Fix: 过滤掉不在 ENDINGS_META 中的非法 ID
+        const validEndings = saved ? saved.filter(id => ENDINGS_META[id]) : [];
+        return new Set(validEndings);
+    } catch {
+        return new Set();
+    }
+});
+```
+
+**最佳实践**：
+
+- **永远不要信任持久化存储的数据**：本地存储的数据可能来自旧版本代码，或者被恶意修改。
+- **初始化即清洗**：在应用启动或组件挂载时，第一时间清洗旧数据，确保存储状态与当前代码逻辑一致。
+- **配置即真理**：任何动态数据的有效性，都应以代码中的静态配置（Config/Meta）为准。
+
+## 更新日志
+
+- 2026-01-11: 初次创建，记录 Git 操作问题和解决方案
+- 2026-01-12: 新增“思维死循环”问题的排查与预防方案
+- 2026-01-20: 新增“代码替换失败”、“编码乱码”及“大文件操作”经验总结
+- 2026-01-22: 新增“多游戏存档冲突”以及“存档点击无效”问题的完整分析与解决方案
+- 2026-01-22: 新增“背景图片切换竞态”及“结局计数异常”的数据清洗方案总结
