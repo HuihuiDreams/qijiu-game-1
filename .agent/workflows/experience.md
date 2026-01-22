@@ -129,7 +129,175 @@ git push
 
 ---
 
+### 6. 多游戏存档冲突（`file://` 协议下 localStorage 共享问题）
+
+**现象**：
+
+- 游戏 A 的存档出现在游戏 B 的存档列表中
+- 删除存档后刷新页面，存档又“复活”了
+- 不同游戏的进度、设置、已读文本等数据相互覆盖
+
+**根本原因**：
+
+1. **`file://` 协议限制**：浏览器将所有通过 `file://` 打开的本地 HTML 文件视为来自同一个“源”（origin），因此它们共享同一个 `localStorage` 存储空间。
+
+2. **键名冲突**：多个游戏使用相同的 `localStorage` 键名（如 `save_slot_1`、`auto_save`），导致数据相互覆盖。
+
+3. **自动迁移功能的副作用**：之前代码中有一个“好心办坏事”的迁移功能，会自动将旧前缀的数据**复制**到新前缀，导致删除存档后又被自动恢复。
+
+**解决方案**：
+
+1. **为每个游戏使用唯一的 localStorage 前缀**：
+
+```javascript
+// 在 CONSTANTS.STORAGE_KEYS 中配置独特前缀
+STORAGE_KEYS: {
+    AUTO_SAVE: 'xiaoshenjiu_auto_save',        // 游戏A
+    SAVE_SLOT_PREFIX: 'xiaoshenjiu_save_slot_',
+    // ...
+}
+
+// 另一个游戏使用不同前缀
+STORAGE_KEYS: {
+    AUTO_SAVE: 'lunhui_auto_save',             // 游戏B
+    SAVE_SLOT_PREFIX: 'lunhui_save_slot_',
+    // ...
+}
+```
+
+1. **启动时删除旧数据，而非迁移**：
+
+```javascript
+// ✅ 正确做法：直接删除旧前缀数据
+useEffect(() => {
+    const OLD_PREFIXES = ['lunhui_', 'qijiu_', 'qiujiu_'];
+    Object.keys(localStorage).forEach(key => {
+        if (OLD_PREFIXES.some(prefix => key.startsWith(prefix))) {
+            localStorage.removeItem(key);  // 删除，不复制
+        }
+    });
+}, []);
+
+// ❌ 错误做法：复制旧数据（会导致存档“复活”）
+// localStorage.setItem(newKey, oldValue);
+```
+
+1. **前缀命名规范**：
+
+| 游戏名称 | 推荐前缀 |
+|---------|---------|
+| 掌门他养了只小沈九 | `xiaoshenjiu_` |
+| 轮回相关游戏 | `lunhui_` |
+
+**注意事项**：
+
+- 部署到不同域名后会自动隔离，无需担心冲突
+- 同时打开多个标签页玩不同游戏时，只要前缀不同就不会干扰
+- 复制引擎代码创建新游戏时，务必修改 `CONSTANTS.STORAGE_KEYS` 中的所有前缀
+
+---
+
+### 7. 存档/读档点击无效 (2026-01-22)
+
+**问题描述**：
+用户反馈在点击“保存存档”或“读取存档”时，界面无任何反应，点击无效。
+
+**原因分析**：
+原代码在 `handleSaveSlot`、`handleLoadSlot` 和 `handleDeleteSlot` 中直接使用了浏览器原生的 synchronous（同步）方法 `window.confirm` 和 `window.alert`。
+
+- 在某些全屏 Web 应用环境、移动端浏览器或受限的 iframe/沙箱环境中，原生的模态对话框可能被浏览器策略拦截，或者因为不属于 DOM 渲染的一部分而无法正确显示。
+- 这会导致 JavaScript 执行被挂起等待用户响应，但用户看不到对话框，从而感觉 UI "死机" 或点击无效。
+
+**解决方案**：
+将所有的原生弹窗替换为游戏内自定义的异步 UI 组件。
+
+1. **引入 Custom Dialogs**: 利用现有的 `AlertDialog` 和 `ConfirmDialog` 组件。
+2. **异步化逻辑**: 将 `window.confirm` 替换为 `await showConfirm(...)`，将 `alert` 替换为 `await showAlert(...)`。
+3. **状态管理**: 通过 `dialogState` 状态来控制自定义对话框的显示与隐藏，确保对话框完全在 React/Preact 的渲染循环内，不受浏览器弹窗策略影响。
+
+**代码变更示例**：
+
+```javascript
+// Before (Native - Blocking/Unreliable)
+if (window.confirm("是否覆盖?")) {
+    // ...
+    alert("保存成功");
+}
+
+// After (Custom - Async/Consistent)
+if (await showConfirm("是否覆盖?")) {
+    // ...
+    await showAlert("保存成功");
+}
+```
+
+**最佳实践**：
+
+- 在 Web 游戏或沉浸式应用开发中，应尽量避免使用 `window.alert/confirm/prompt`。
+- 使用自定义 UI 弹窗不仅能保证交互的可靠性，还能保持游戏美术风格的一致性。
+
+---
+
 ## 更新日志
 
 - 2026-01-11: 初次创建，记录 Git 操作问题和解决方案
 - 2026-01-12: 新增“思维死循环”问题的排查与预防方案
+- 2026-01-20: 新增“代码替换失败”、“编码乱码”及“大文件操作”经验总结
+- 2026-01-22: 新增“多游戏存档冲突”以及“存档点击无效”问题的完整分析与解决方案
+
+---
+
+### 8. 背景图片切换错误 (快速点击导致的状态竞争)
+
+**现象**：
+用户发现在快速点击（快进或快速阅读）时，背景图片偶尔不会按照剧情设定变换，卡在上一张图或显示错误的过渡状态。
+
+**原因分析**：
+这是一个典型的 **Race Condition (竞态条件)** 问题。
+在原有的 `BackgroundLayer` 组件中：
+
+1. 背景切换依赖于 `setTimeout` (1秒) 来完成淡入淡出。
+2. 当用户点击速度超过动画时间（<1s）时，上一张图的定时器尚未执行完毕，虽然 `useEffect` 触发了清理，但逻辑中没有正确处理“中途被打断”的状态重置。
+3. 导致 `nextSrc`（淡入图）和 `currentSrc`（当前底图）的状态更新错乱，新的背景请求可能被旧的定时器回调覆盖。
+
+**解决方案**：
+完全重构 `useEffect` 中的过渡逻辑，确保“清理”和“重置”的原子性。
+
+1. **严格的资源清理**：在 `useEffect` 的 cleanup 函数中，必须使用 `cancelAnimationFrame` 和 `clearTimeout` 清除所有挂起的异步任务。
+2. **强制状态同步**：每当 `src` 发生变化时，如果检测到上一次过渡还未完成，应立即重置状态，而不是等待旧的动画结束。
+3. **逻辑优化**：
+
+   ```javascript
+   useEffect(() => {
+       if (src !== currentSrc) {
+           // 1. 立即设定新目标
+           setNextSrc(src);
+           setIsTransitioning(false); // 先重置动画状态
+
+           // 2. 下一帧启动新动画
+           const raf = requestAnimationFrame(() => setIsTransitioning(true));
+
+           // 3. 设置完成回调
+           const timer = setTimeout(() => {
+               setCurrentSrc(src);
+               // 注意：这里不需要手动 setNextSrc(null)，留给下一次 render 的 else 分支处理更安全
+           }, 1000);
+
+           // 4. ✅ 关键：清理函数
+           return () => {
+               cancelAnimationFrame(raf);
+               clearTimeout(timer);
+           };
+       } else {
+           // 5. 稳定状态：清理过渡痕迹
+           setNextSrc(null);
+           setIsTransitioning(false);
+       }
+   }, [src, currentSrc]);
+   ```
+
+**最佳实践**：
+
+- 在处理任何持续时间较长的 UI 动画或过渡时，必须假设状态随时可能在中途改变。
+- 始终实现健壮的 `cleanup` 函数。
+- 对于高频触发的输入（如游戏中的点击），UI 响应逻辑必须能够优雅地处理中断。
