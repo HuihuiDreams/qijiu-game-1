@@ -59,6 +59,24 @@
     <meta name="twitter:description" content="一个关于修仙界丹药与爱恨情仇的视觉小说。岳清源×沈清秋，破镜重圆，情不知所起，一往而深。">
     <meta name="twitter:image" content="./start_screen.jpg">
 
+    <!-- 微信分享优化 (WeChat) -->
+    <!-- 微信会读取 og:title, og:description, og:image，但需要确保图片尺寸合适 -->
+    <meta itemprop="name" content="安定峰采购假药引发的惨案 VN风">
+    <meta itemprop="description" content="一个关于修仙界的爱恨情仇的视觉小说。岳清源×沈清秋（沈九，非沈垣），破镜重圆，情不知所起，一往而深。">
+    <meta itemprop="image" content="https://huihuidreams.github.io/qijiu-game-1/start_screen.jpg">
+
+    <!-- 微博分享优化 (Weibo) -->
+    <!-- 微博主要使用 Open Graph 标签，但也支持以下标签 -->
+    <meta property="weibo:article:create_at" content="2026-01-30">
+    <meta property="weibo:webpage:create_at" content="2026-01-30">
+
+    <!-- QQ/QQ空间分享优化 -->
+    <!-- QQ 浏览器和 QQ 空间会读取 og 标签，建议图片使用绝对路径 -->
+    <meta name="mobile-agent" content="format=html5; url=https://huihuidreams.github.io/qijiu-game-1/">
+
+    <!-- 移动端分享优化（通用） -->
+    <link rel="image_src" href="https://huihuidreams.github.io/qijiu-game-1/start_screen.jpg">
+
     <!-- Additional SEO -->
     <meta name="theme-color" content="#0d0d1a">
     <meta name="mobile-web-app-capable" content="yes">
@@ -781,31 +799,43 @@
                     { speaker: '沈清秋', text: "（手中折扇“啪”地合上，眉间聚着戾气）没有？木师弟，你千草峰号称汇集天下灵药，如今我要能助我结丹突破的药，你却推三阻四？", mood: 'angry', bg: ASSETS.bg.qiancao, sound: ASSETS.audio.fan },
                     { speaker: '木清芳', text: "沈师兄，并非师弟不给。只是修行讲究循序渐进。若用猛药强行拔高，只怕欲速则不达。", mood: 'neutral' },
                     { speaker: '沈清秋', text: "（冷笑一声）欲速则不达？我看柳清歌精进神速，也没见他出什么岔子。怎么，他是天之骄子，我就是朽木一块？", mood: 'angry' },
-                    { speaker: '木清芳', text: "（叹气，取出贴着符箓的青瓷小瓶）这是新炼的“固元紫金丹”。此药性烈，能短时间激发潜能……", mood: 'worried' },
+                    { speaker: '木清芳', text: "（叹气，取出贴着符箓的青瓷小瓶）这是新炼的“固元紫金丹”。此药性烈，能短时间激发潜能，或许有助师兄结丹。", mood: 'worried' },
                     { speaker: '木清芳', text: "不过师弟必须言明，这批药的几味辅料是安定峰新进的，尚师兄虽信誓旦旦说是上品，但我尚未完全验过药性……", mood: 'worried' },
                     { speaker: '沈清秋', text: "（一把夺过药瓶）够了。只要有用就行。", mood: 'angry' },
                     { speaker: '旁白', text: "他无法忍受同辈师兄弟都先他结丹。他要变强，哪怕饮鸩止渴。", mood: 'narrative' },
-                    { speaker: '旁白', text: "夜深了，清静峰竹舍。竹林在风中沙沙作响。沈清秋屏退众弟子，设下两道禁制，仰头将那颗紫金丹药吞入腹中。", mood: 'narrative', bg: ASSETS.bg.bamboo },
+                    { speaker: '旁白', text: "沈清秋拂袖而去，青色衣摆划过一道决绝的弧度。木清芳望着他的背影，心中升起隐隐不安，却终究没能拦住。", mood: 'narrative' },
+                    { speaker: '旁白', text: "夜深了，清静峰竹舍。竹林在风中沙沙作响。沈清秋屏退众弟子，设下两道禁制。他盘膝坐于榻上，拔开瓷瓶塞子。一股奇异香气瞬间弥漫，不似寻常丹药清苦，反倒带着浓郁甜腻的味道。", mood: 'narrative', bg: ASSETS.bg.bamboo },
+                    { speaker: '旁白', text: "沈清秋微皱眉，但对修为的渴望压倒了疑虑。他仰头，将那颗紫金丹药吞入腹中。", mood: 'narrative' },
+                    { speaker: '旁白', text: "起初是一股暖流，顺喉入丹田。沈清秋立刻运转灵力，引导药力冲击滞涩的灵脉。然而仅过半柱香，那股暖流陡然变了。", mood: 'narrative' },
                     { speaker: '沈清秋', text: "（闷哼一声，额头渗出冷汗）唔……", mood: 'pain' },
-                    { speaker: '旁白', text: "那火没烧在经脉，全烧进了骨髓血液，直冲小腹，带着难以言喻又令人羞耻的燥热。", mood: 'narrative' },
+                    { speaker: '旁白', text: "它不再是温和灵力，成了一团疯狂肆虐的邪火！那火没烧在经脉，全烧进了骨髓血液，直冲小腹，带着难以言喻又令人羞耻的燥热。", mood: 'narrative' },
                     { speaker: '沈清秋', text: "（蜷缩起身子，手指死抓身下竹席）该死……木清芳……尚清华……", mood: 'shame' },
-                    { speaker: '旁白', text: "身体像被万蚁噬咬，又痒又痛，更可怕的是那种深处泛上来的空虚感。", mood: 'narrative' },
+                    { speaker: '旁白', text: "沈清秋眼前阵阵发黑，竹舍内的陈设在他眼中变得扭曲。身体像被万蚁噬咬，又痒又痛，更可怕的是那种深处泛上来的空虚感。", mood: 'narrative' },
+                    { speaker: '旁白', text: "这时，门外禁制被触动。", mood: 'narrative' },
                     { speaker: '岳清源', text: "清秋师弟？我刚得了些极好的雨前龙井，想着你应该还没歇……", mood: 'gentle' },
                     { speaker: '沈清秋', text: "（浑身一僵，死死咬住嘴唇）（内心）岳清源。绝不能让他看见自己这副模样！绝不！滚……", mood: 'shame' },
+                    { speaker: '旁白', text: "他在喉间低吼，却发不出声。门外的岳清源没听到回应，却敏锐察觉屋内气息极度紊乱。那并非修炼时的灵力波动，更像濒临崩溃的危险征兆。", mood: 'narrative' },
                     { speaker: '岳清源', text: "（声音染上焦急）清秋师弟？你怎么了？我进来了！", mood: 'worried' },
-                    { speaker: '旁白', text: "【音效】砰！灵力破门。", mood: 'system', sound: ASSETS.audio.boom, shake: true },
+                    { speaker: '旁白', text: "砰！灵力破门。", mood: 'system', sound: ASSETS.audio.boom, shake: true },
+                    { speaker: '旁白', text: "推门的瞬间，令人窒息的甜腻香气扑面而来。", mood: 'narrative' },
                     { speaker: '岳清源', text: "（几步冲到榻前）这味道……合欢宗的千机散？！小九！", mood: 'shocked' },
+                    { speaker: '旁白', text: "沈清秋衣衫凌乱，大半个肩膀露在外面，原本白皙的皮肤泛着不正常的潮红。他蜷缩在角落，眼神涣散，正痛苦地撕扯领口，指甲在胸口抓出一道道血痕。" },
                     { speaker: '沈清秋', text: "（眼神涣散，痛苦地撕扯领口）别……别碰我……", mood: 'shame' },
+                    { speaker: '旁白', text: "沈清秋下意识抗拒，声音带着哭腔，身体却诚实地向那个冰凉源头靠去。", mood: 'narrative' }
                 ],
                 next: 'chapter2'
             },
             'chapter2': {
                 lines: [
-                    { speaker: '旁白', text: "寒潭冷泉。岳清源抱着沈清秋跳入池中，试图帮他化解药性。然而一炷香过去，沈清秋体内热度未退，反因外界极寒刺激，逼得药性疯狂反扑。", mood: 'narrative', bg: ASSETS.bg.coldspring, sound: ASSETS.audio.splash },
+                    { speaker: '旁白', text: "穹顶峰后山，寒潭冷泉。此处常年冰封，水温足可冻裂岩石。", mood: 'narrative', bg: ASSETS.bg.coldspring, sound: ASSETS.audio.splash },
+                    { speaker: '旁白', text: "岳清源抱着沈清秋跳入池中，刺骨寒意包裹全身，沈清秋被激得浑身一颤，发出一声短促尖叫。", mood: 'narrative' },
+                    { speaker: '岳清源', text: "小九，忍一忍，忍忍就好……", mood: 'worried' },
+                    { speaker: '旁白', text: "岳清源紧搂着他，源源不断输送精纯灵力，试图帮他化解药性。然而一炷香过去，沈清秋体内热度未退，反因外界极寒刺激，逼得药性在体内疯狂反扑。", mood: 'narrative' },
                     { speaker: '沈清秋', text: "（猛地喷出一口鲜血）噗——", mood: 'pain' },
                     { speaker: '旁白', text: "眼角、鼻下、耳孔，竟都渗出了细细血丝。七窍流血。这是即将爆体而亡的征兆。", mood: 'narrative' },
                     { speaker: '岳清源', text: "（抱着他的手剧烈颤抖）（内心）冷泉没用。药太烈，已入骨髓。", mood: 'sorrow' },
-                    { speaker: '岳清源', text: "（内心）若不疏解，小九会没命的。真的会死。", mood: 'sorrow' },
+                    { speaker: '岳清源', text: "（内心）若不疏解，不仅修为尽失，小九会没命的。真的会死。", mood: 'sorrow' },
+                    { speaker: '旁白', text: "岳清源心跳几乎停滞。看着怀里气息奄奄，已经开始翻白眼的师弟，巨大的恐惧瞬间吞没了他。", mood: 'narrative' },
                     { speaker: '旁白', text: "他知道接下来唯一的办法是什么，但他也知道一旦迈出那一步，他和沈清秋之间那层勉强维持的窗户纸将被捅破，迎来的或许是此生不绝的恨意。", mood: 'narrative' },],
                 next: 'choice1'
             },
@@ -820,14 +850,20 @@
             },
             'chapter3': {
                 lines: [
-                    { speaker: '岳清源', text: "（红着眼，将人猛地抱起）恨我也好，杀我也罢……只要你活着。", mood: 'dark', bg: ASSETS.bg.bedroom },
-                    { speaker: '旁白', text: "掌门寝殿，结界落下。肌肤相亲瞬间，甜腻香气彻底引爆一切。沈清秋本能地将他当成唯一救赎，死死缠住岳清源脖颈。", mood: 'narrative' },
+                    { speaker: '岳清源', text: "（红着眼，将人猛地抱起）恨我也好，杀我也罢……只要你活着。", mood: 'dark', bg: ASSETS.bg.coldspring },
+                    { speaker: '旁白', text: "岳清源红着眼，将怀里人猛地抱起带出水面，身形化作流光，直奔穹顶峰掌门寝殿。", mood: 'narrative', bg: ASSETS.bg.bedroom },
+                    { speaker: '旁白', text: "寝殿内，重重结界落下，隔绝外界一切窥探。", mood: 'narrative' },
+                    { speaker: '旁白', text: "沈清秋被放在柔软榻上，此刻已全无神智，只剩求生本能。体内那把火烧得五脏六腑都疼，他无助挥舞双手，想抓什么来填补那足以吞噬灵魂的空虚。", mood: 'narrative' },
+                    { speaker: '岳清源', text: "（内心）必须做最后的灵力引导……", mood: 'worried' },
+                    { speaker: '旁白', text: "岳清源覆身上去，试图做最后的灵力引导。但肌肤相亲瞬间，甜腻香气彻底引爆一切。", mood: 'narrative' },
+                    { speaker: '旁白', text: "沈清秋本能地将他当成唯一救赎，死死缠住岳清源脖颈。", mood: 'narrative' },
                     { speaker: '沈清秋', text: "（难受地蹭着，眼泪大颗滚落）……七哥……救我……七哥……好难受……", mood: 'shame' },
+                    { speaker: '旁白', text: "这一声软糯带哭腔的'七哥'，如惊雷狠狠劈碎了岳清源名为理智的最后防线。", mood: 'narrative' },
                     { speaker: '旁白', text: "他低下头，近乎凶狠地吻住那张喊疼的嘴，动作不再是单纯救治，而是混杂绝望的掠夺。", mood: 'narrative' },
                     { speaker: '岳清源', text: "（眼底墨色翻涌）小九……七哥救你……七哥这就给你……", mood: 'dark' },
                     { speaker: '旁白', text: "衣衫尽裂，满室荒唐。这是一场名为救赎的凌迟。沈清秋在药力驱使下展现出从未见过的媚态，岳清源则在沈清秋一声声变调的“七哥”中，彻底疯魔。", mood: 'narrative', sound: ASSETS.audio.cloth, rhythm: true },
                     { speaker: '旁白', text: "他要不够。想和他融为一体，想让他永远只能这样哭着喊自己名字，想把错过的时光，都在这一夜狠狠补回来。", mood: 'narrative', rhythm: true },
-                    { speaker: '旁白', text: "翌日清晨。寝殿一片狼藉。沈清秋在一阵酸痛中醒来，感觉像被拆散架子又重新拼凑，尤其那难以启齿之处，传来火辣辣的异样。", mood: 'narrative' },
+                    { speaker: '旁白', text: "翌日清晨。寝殿一片狼藉，空气残留着未散的靡乱气息。沈清秋在一阵酸痛中醒来，感觉像被拆散架子又重新拼凑，尤其那难以启齿之处，传来火辣辣的异样。", mood: 'narrative' },
                     { speaker: '旁白', text: "记忆如潮水回笼。昨晚的燥热、绝望、求救……以及后来那场疯狂缠绵。他记得岳清源的汗水滴在胸口，记得对方在耳边低吼“小九”，更记得……自己如何像个不知廉耻的荡妇，主动哭求、纠缠。", mood: 'narrative' },
                     { speaker: '沈清秋', text: "（看着身侧熟睡的岳清源，脸色惨白）（内心）太可笑了。太下贱了。", mood: 'despair' },
                     { speaker: '沈清秋', text: "（内心）昨晚那场荒唐中，我竟感到一丝满足。被岳清源完全占有中竟感到了久违的踏实。我竟然……还是爱着这个恨了半辈子的人。", mood: 'despair' },
@@ -835,16 +871,20 @@
                     { speaker: '沈清秋', text: "（脑海中唯一的念头）逃。", mood: 'despair' },
                     { speaker: '旁白', text: "沈清秋强忍不适。捡起地上被撕破的青衫胡乱套上，又随手抓了件岳清源外袍裹住自己。他不敢回头，跌跌撞撞冲出寝殿，避开所有巡守弟子，像个见不得光的小偷，狼狈逃离苍穹山。", mood: 'system' },
                     { speaker: '岳清源', text: "（醒来面对空荡的怀抱，心头一慌）小九？", mood: 'worried' },
-                    { speaker: '旁白', text: "没有。哪里都没有。岳清源看着满地狼藉——碎裂的青衫、染血的锦被。他知昨晚是情急无奈，但也做好了承受怒火的准备。他以为小九醒来会恨他入骨，甚至拔剑相向。他愿受这份恨。", mood: 'narrative' },
+                    { speaker: '旁白', text: "岳清源心头一慌，披衣下床。神识铺开，扫过穹顶峰，甚至蔓延至清静峰。没有。哪里都没有。", mood: 'narrative' },
+                    { speaker: '旁白', text: "岳清源看着满地狼藉——碎裂的青衫、染血的锦被。他知昨晚是情急无奈，但也做好了承受怒火的准备。他以为小九醒来会恨他入骨，甚至拔剑相向。他愿受这份恨。", mood: 'narrative' },
                     { speaker: '旁白', text: "他还以为，只要负责，极力挽留，他们之间或许……可小九逃了。宁愿带着一身伤痛余毒，也要逃离他。", mood: 'narrative' },
                     { speaker: '木清芳', text: "掌门师兄？今日怎么有空……", mood: 'neutral', bg: ASSETS.bg.qiancao },
-                    { speaker: '木清芳', text: "（内心）掌门师兄脖颈锁骨处的深紫抓痕和带血咬痕……那是极度激烈的缠绵所留。整个苍穹山，敢在掌门身上留痕的，除那人外……", mood: 'surprised' },
+                    { speaker: '木清芳', text: "（内心）掌门师兄未束冠，长发披散，眼下带着阴黑。且脖颈锁骨处的深紫抓痕和带血咬痕……那是极度激烈的缠绵所留。整个苍穹山，敢在掌门身上留痕的，除那人外……", mood: 'surprised' },
                     { speaker: '岳清源', text: "（面色阴鸷）查！这到底是什么。（把丹药碎片扔到桌上）", mood: 'dark' },
+                    { speaker: '旁白', text: "木清芳不敢多问，连忙查验。片刻后脸色煞白，冷汗涔涔。", mood: 'narrative' },
                     { speaker: '木清芳', text: "（脸色煞白）掌……掌门师兄？这……主料没问题，但辅料“龙涎草”被换成了“合欢千叶红”！这是合欢宗流出的劣质催情辅料……", mood: 'worried' },
                     { speaker: '木清芳', text: "是……安定峰采购的。尚师兄前些日子说，有渠道低价拿高阶灵草，能为门派省一大笔开支……", mood: 'worried' },
                     { speaker: '岳清源', text: "（气极反笑，笑容渗人）省钱？传我掌门令。尚清华滥用职权，采购劣药，致同门受害，险酿大祸。", mood: 'dark' },
                     { speaker: '岳清源', text: "即日起，革去尚清华安定峰峰主半年俸禄，罚没私库充公。命他亲自清理那批劣药，一颗不许剩。", mood: 'determined' },
                     { speaker: '岳清源', text: "还有，禁足安定峰三个月，让他把以前所有账目重算一遍。若再有纰漏，我就让他去百战峰给柳师弟当陪练。", mood: 'determined' },
+                    { speaker: '旁白', text: "木清芳听得心惊。这已是岳清源极度克制的结果。", mood: 'narrative' },
+                    { speaker: '旁白', text: "处理完这些，岳清源提着玄肃剑，走出药庐。站在千草峰崖边，目光望向山门外沈清秋逃离的方向。", mood: 'narrative' },
                     { speaker: '岳清源', text: "（抚摸着脖颈上的吻痕）小九……哪怕翻遍九州，我也要找到你。", mood: 'dark' },
                 ],
                 next: 'chapter4'
@@ -981,7 +1021,7 @@
                 id: 'chapter1',
                 order: 1,
                 title: '第一章：假药风波',
-                description: '沈清秋求药不得，误服被掺假的丹药...'
+                description: '沈清秋为早日结丹，误服被掺假的丹药...'
             },
             'chapter2': {
                 id: 'chapter2',
