@@ -778,7 +778,14 @@
                     v4: './sqq_4.png',        // 4. 目光躲闪 (用于 shocked, soft - 震惊/心虚/傲娇)
                     v5: './sqq_5.png'         // 5. 目光躲闪+脸红 (用于 shame - 羞耻/情动)
                 },
-                yqy: './yueqingyuan.png'
+                yqy: {
+                    v1: './yqy_1.png',        // 1. 正面，正常状态 (默认, neutral, soft)
+                    v2: './yqy_2.png',        // 2. 正面，微笑 (gentle)
+                    v3: './yqy_3.png',        // 3. 正面，皱眉 (worried, shocked)
+                    v4: './yqy_4.png',        // 4. 看旁边，皱眉 (dark, determined)
+                    v5: './yqy_5.png',        // 5. 正面，微笑脸红 (flush)
+                    v6: './yqy_6.png'         // 6. 看旁边，平静状态 (sorrow, reticent)
+                }
             },
             audio: {
                 bgm: './baheng.mp3',
@@ -858,7 +865,7 @@
                     { speaker: '旁白', text: "岳清源覆身上去，试图做最后的灵力引导。但肌肤相亲瞬间，甜腻香气彻底引爆一切。", mood: 'narrative' },
                     { speaker: '旁白', text: "沈清秋本能地将他当成唯一救赎，死死缠住岳清源脖颈。", mood: 'narrative' },
                     { speaker: '沈清秋', text: "（难受地蹭着，眼泪大颗滚落）……七哥……救我……七哥……好难受……", mood: 'shame' },
-                    { speaker: '旁白', text: "这一声软糯带哭腔的'七哥'，如惊雷狠狠劈碎了岳清源名为理智的最后防线。", mood: 'narrative' },
+                    { speaker: '旁白', text: "这一声软糯带哭腔的“七哥”，如惊雷狠狠劈碎了岳清源名为理智的最后防线。", mood: 'narrative' },
                     { speaker: '旁白', text: "他低下头，近乎凶狠地吻住那张喊疼的嘴，动作不再是单纯救治，而是混杂绝望的掠夺。", mood: 'narrative' },
                     { speaker: '岳清源', text: "（眼底墨色翻涌）小九……七哥救你……七哥这就给你……", mood: 'dark' },
                     { speaker: '旁白', text: "衣衫尽裂，满室荒唐。这是一场名为救赎的凌迟。沈清秋在药力驱使下展现出从未见过的媚态，岳清源则在沈清秋一声声变调的“七哥”中，彻底疯魔。", mood: 'narrative', sound: ASSETS.audio.cloth, rhythm: true },
@@ -876,11 +883,11 @@
                     { speaker: '旁白', text: "他还以为，只要负责，极力挽留，他们之间或许……可小九逃了。宁愿带着一身伤痛余毒，也要逃离他。", mood: 'narrative' },
                     { speaker: '木清芳', text: "掌门师兄？今日怎么有空……", mood: 'neutral', bg: ASSETS.bg.qiancao },
                     { speaker: '木清芳', text: "（内心）掌门师兄未束冠，长发披散，眼下带着阴黑。且脖颈锁骨处的深紫抓痕和带血咬痕……那是极度激烈的缠绵所留。整个苍穹山，敢在掌门身上留痕的，除那人外……", mood: 'surprised' },
-                    { speaker: '岳清源', text: "（面色阴鸷）查！这到底是什么。（把丹药碎片扔到桌上）", mood: 'dark' },
+                    { speaker: '岳清源', text: "（面色阴鸷）查！这到底是什么。（把丹药碎片扔到桌上）", mood: 'angry' },
                     { speaker: '旁白', text: "木清芳不敢多问，连忙查验。片刻后脸色煞白，冷汗涔涔。", mood: 'narrative' },
                     { speaker: '木清芳', text: "（脸色煞白）掌……掌门师兄？这……主料没问题，但辅料“龙涎草”被换成了“合欢千叶红”！这是合欢宗流出的劣质催情辅料……", mood: 'worried' },
                     { speaker: '木清芳', text: "是……安定峰采购的。尚师兄前些日子说，有渠道低价拿高阶灵草，能为门派省一大笔开支……", mood: 'worried' },
-                    { speaker: '岳清源', text: "（气极反笑，笑容渗人）省钱？传我掌门令。尚清华滥用职权，采购劣药，致同门受害，险酿大祸。", mood: 'dark' },
+                    { speaker: '岳清源', text: "（气极反笑，笑容渗人）省钱？传我掌门令。尚清华滥用职权，采购劣药，致同门受害，险酿大祸。", mood: 'angry' },
                     { speaker: '岳清源', text: "即日起，革去尚清华安定峰峰主半年俸禄，罚没私库充公。命他亲自清理那批劣药，一颗不许剩。", mood: 'determined' },
                     { speaker: '岳清源', text: "还有，禁足安定峰三个月，让他把以前所有账目重算一遍。若再有纰漏，我就让他去百战峰给柳师弟当陪练。", mood: 'determined' },
                     { speaker: '旁白', text: "木清芳听得心惊。这已是岳清源极度克制的结果。", mood: 'narrative' },
@@ -925,8 +932,8 @@
                     { speaker: '沈清秋', text: "（灵力激荡，拼命挣扎）岳清源！你放手！", mood: 'despair' },
                     { speaker: '岳清源', text: "我不放。你还要躲到几时？", mood: 'sorrow' },
                     { speaker: '沈清秋', text: "（眼尾泛红，冷笑讥讽）躲？岳掌门若怕我败坏苍穹山名声，大可清理门户！似我这般流连烟花柳巷之人，本来就脏……", mood: 'disdain' },
-                    { speaker: '岳清源', text: "（一声暴喝）住口！你知道我非为此事。你以为那晚是我救了你？小九，那是你在自救！", mood: 'dark' },
-                    { speaker: '岳清源', text: "是你心里终于肯让我靠近，肯哭着喊我一声七哥……你逃根本不是因为恨我，你是恨你自己！", mood: 'dark' },
+                    { speaker: '岳清源', text: "（一声暴喝）住口！你知道我非为此事。你以为那晚是我救了你？小九，那是你在自救！", mood: 'angry' },
+                    { speaker: '岳清源', text: "是你心里终于肯让我靠近，肯哭着喊我一声七哥……你逃根本不是因为恨我，你是恨你自己！", mood: 'angry' },
                     { speaker: '旁白', text: "岳清源卸下了掌门所有的体面，只剩下一个近乎绝望的疯子。", mood: 'narrative' },
                     { speaker: '岳清源', text: "（赤红着眼乞求）你若还有恨，拔出玄肃取我性命！只求你，别再作践你自己！", mood: 'sorrow' },
                     { speaker: '沈清秋', text: "（彻底崩溃）闭嘴……你闭嘴！！", mood: 'shame' },
@@ -960,7 +967,7 @@
                     { speaker: '岳清源', text: "（浑身巨震，狠狠抱紧怀中人）我在。（泪水滑落）小九，我们……回家。回苍穹山。", mood: 'gentle' },
                     { speaker: '旁白', text: "尘埃落定。尚清华被废去修为打入水牢。苍穹山夜色重归宁静。掌门寝殿，烛火摇曳。仍是那张床榻，气氛却截然不同。沈清秋体内余毒沉积，需靠双修化解。", mood: 'narrative', bg: ASSETS.bg.bedroom },
                     { speaker: '旁白', text: "帷幔低垂。沈清秋未着寸缕，肌肤在烛光下泛着暖玉光泽。他虽羞赧侧头，身体却未抗拒靠近。", mood: 'narrative' },
-                    { speaker: '岳清源', text: "（手指轻抚他的眉眼，像是对待稀世珍宝）小九，可能会有点疼，忍一忍。", mood: 'gentle' },
+                    { speaker: '岳清源', text: "（手指轻抚他的眉眼，像是对待稀世珍宝）小九，可能会有点疼，忍一忍。", mood: 'flush' },
                     { speaker: '沈清秋', text: "（睫毛颤了颤，耳根微红）啰嗦……快点。", mood: 'flush' },
                     { speaker: '旁白', text: "这一次，没有疯狂的撕咬，没有绝望的哭喊。唯有温柔的缠绵。", mood: 'narrative' },
                     { speaker: '旁白', text: "岳清源的动作很慢，每一个吻都充满了安抚与爱意。灵力随着身体的结合缓缓流入沈清秋的体内，温暖而包容，一点点洗刷着他经脉中的污浊与痛楚。", mood: 'narrative' },
@@ -2265,7 +2272,25 @@
                 return html`
                     <div class="absolute inset-0 z-10 flex items-end justify-center pointer-events-none">
                         <div class="w-1/2 h-full max-w-[500px] relative transition-all duration-[800ms] cubic-bezier(0.34, 1.56, 0.64, 1) ${isYQY ? 'translate-y-0 opacity-100 scale-105 z-20' : 'translate-y-4 opacity-0 scale-95 z-10'}">
-                            <img src=${ASSETS.char.yqy} class="char-sprite absolute bottom-0 left-1/2 md:left-[40%] -translate-x-1/2 h-[85%] object-contain object-bottom" />
+                            ${(() => {
+                        // 岳清源立绘映射逻辑 (6张图版本)
+                        const mood = currentLine?.mood || 'neutral';
+                        let spriteSrc = ASSETS.char.yqy.v1; // 默认：正常
+
+                        if (['gentle'].includes(mood)) {
+                            spriteSrc = ASSETS.char.yqy.v2; // 2. 微笑
+                        } else if (['worried', 'shocked'].includes(mood)) {
+                            spriteSrc = ASSETS.char.yqy.v3; // 3. 皱眉
+                        } else if (['dark', 'determined', 'sorrow'].includes(mood)) {
+                            spriteSrc = ASSETS.char.yqy.v4; // 4. 看旁边，皱眉
+                        } else if (['flush'].includes(mood)) {
+                            spriteSrc = ASSETS.char.yqy.v5; // 5. 微笑脸红
+                        } else if (['reticent'].includes(mood)) {
+                            spriteSrc = ASSETS.char.yqy.v6; // 6. 看旁边，平静
+                        }
+
+                        return html`<img src=${spriteSrc} class="char-sprite absolute bottom-0 left-1/2 md:left-[40%] -translate-x-1/2 h-[85%] object-contain object-bottom" />`;
+                    })()}
                         </div>
                         <div class="w-1/2 h-full max-w-[500px] relative transition-all duration-[800ms] cubic-bezier(0.34, 1.56, 0.64, 1) ${isSQQ ? 'translate-y-0 opacity-100 scale-105 z-20' : 'translate-y-4 opacity-0 scale-95 z-10'}">
                             ${(() => {
